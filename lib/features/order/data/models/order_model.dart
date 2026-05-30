@@ -10,7 +10,11 @@ class OrderModel {
   final DateTime? pickedUpAt;
   final DateTime? deliveredAt;
   final String? deliveryProofPhoto;
+  final String? receivedBy;
   final List<OrderItemModel> items;
+  final String? assignedBy;
+  final double? distance;
+  final DateTime? deadline;
 
   OrderModel({
     required this.id,
@@ -24,7 +28,11 @@ class OrderModel {
     this.pickedUpAt,
     this.deliveredAt,
     this.deliveryProofPhoto,
+    this.receivedBy,
     required this.items,
+    this.assignedBy,
+    this.distance,
+    this.deadline,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -40,6 +48,10 @@ class OrderModel {
       pickedUpAt: json['picked_up_at'] != null ? DateTime.tryParse(json['picked_up_at']) : null,
       deliveredAt: json['delivered_at'] != null ? DateTime.tryParse(json['delivered_at']) : null,
       deliveryProofPhoto: json['delivery_proof_photo'],
+      receivedBy: json['recipient_name'],
+      assignedBy: json['assigned_by'],
+      distance: json['distance'] != null ? double.tryParse(json['distance'].toString()) : null,
+      deadline: json['deadline'] != null ? DateTime.tryParse(json['deadline']) : null,
       items: (json['items'] as List?)?.map((i) => OrderItemModel.fromJson(i)).toList() ?? [],
     );
   }

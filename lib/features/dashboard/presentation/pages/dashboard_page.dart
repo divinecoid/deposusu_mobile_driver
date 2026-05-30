@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../auth/presentation/provider/auth_provider.dart';
+import '../../../auth/presentation/provider/auth_provider.dart';
 import '../provider/dashboard_provider.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/theme_provider.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final VoidCallback? onOpenDrawer;
+  final Function(int)? onNavigateTab;
+
+  const DashboardPage({super.key, this.onOpenDrawer, this.onNavigateTab});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -22,9 +26,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _handleCheckIn() async {
+    final shift = 'Full Day';
     final success = await context.read<DashboardProvider>().checkIn(
       latitude: -6.2088, // Placeholder GPS coordinate (Jakarta)
       longitude: 106.8456,
+      shift: shift,
     );
 
     if (mounted) {
@@ -32,7 +38,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Check-In berhasil! Selamat bekerja.'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
           ),
         );
       } else {
@@ -40,7 +46,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error ?? 'Gagal Check-In.'),
-            backgroundColor: AppColors.danger,
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -58,7 +64,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Check-Out berhasil! Terima kasih untuk kerja keras Anda hari ini.'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
           ),
         );
       } else {
@@ -66,7 +72,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error ?? 'Gagal Check-Out.'),
-            backgroundColor: AppColors.danger,
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -77,6 +83,14 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final dashboardProvider = context.watch<DashboardProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isDark = themeProvider.isDarkMode;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final surfaceColor = colorScheme.surface;
+    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+
     final user = authProvider.user ?? {};
     final driverProfile = user['profile'] ?? {};
     final stats = dashboardProvider.stats;
@@ -92,11 +106,30 @@ class _DashboardPageState extends State<DashboardPage> {
         : '--:--';
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        leading: widget.onOpenDrawer != null
+            ? IconButton(
+                icon: Icon(Icons.menu_rounded, color: isDark ? Colors.white : Colors.black87),
+                onPressed: widget.onOpenDrawer,
+              )
+            : null,
+        title: const Text('DEPOSUSU'),
+        actions: [
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () => themeProvider.toggleTheme(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.red),
+            onPressed: () => authProvider.logout(),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => dashboardProvider.fetchDashboardData(),
-          color: AppColors.primary,
+          color: colorScheme.primary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(20.0),
@@ -108,9 +141,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: colorScheme.primary,
                       child: Text(
-                        authProvider.isAuthenticated ? authProvider.user!['name'].substring(0, 2).toUpperCase() : 'KR',
+                        authProvider.isAuthenticated ? (authProvider.user!['name'] as String).split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join('').toUpperCase() : 'KR',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -125,50 +158,48 @@ class _DashboardPageState extends State<DashboardPage> {
                         children: [
                           Text(
                             user['name'] ?? 'Kurir',
-                            style: const TextStyle(
-                              color: AppColors.textDark,
+                            style: TextStyle(
+                              color: textColor,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${driverProfile['vehicle_type'] ?? "Grand Max"} • ${driverProfile['license_plate'] ?? "B 1234 CD"}',
-                            style: const TextStyle(
-                              color: AppColors.textMutedDark,
+                            '${driverProfile['vehicle_type'] ?? "Tugas Kurir"} • ${driverProfile['license_plate'] ?? "Siap Bertugas"}',
+                            style: TextStyle(
+                              color: mutedTextColor,
                               fontSize: 14,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: AppColors.danger),
-                      onPressed: () => authProvider.logout(),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 28),
+
+
 
                 // Card Attendance Check In/Out
                 Container(
                   padding: const EdgeInsets.all(20.0),
                   decoration: BoxDecoration(
-                    color: AppColors.cardDark,
+                    color: surfaceColor,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+                    border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.watch_later_outlined, color: AppColors.secondary, size: 20),
-                          SizedBox(width: 8),
+                          Icon(Icons.watch_later_outlined, color: colorScheme.secondary, size: 20),
+                          const SizedBox(width: 8),
                           Text(
-                            'PRESENSI HARIAN',
+                            'ABSENSI',
                             style: TextStyle(
-                              color: AppColors.textDark,
+                              color: textColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                               letterSpacing: 1.1,
@@ -180,51 +211,51 @@ class _DashboardPageState extends State<DashboardPage> {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildTimeCol('Check In', checkedInTime, attendance['checked_in']),
+                            child: _buildTimeCol('Mulai Bertugas', checkedInTime, attendance['checked_in'], isDark, textColor),
                           ),
-                          Container(width: 1, height: 40, color: Colors.white10),
+                          Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.black12),
                           Expanded(
-                            child: _buildTimeCol('Check Out', checkedOutTime, attendance['checked_out']),
+                            child: _buildTimeCol('Selesai Bertugas', checkedOutTime, attendance['checked_out'], isDark, textColor),
                           ),
                         ],
                       ),
                       const SizedBox(height: 24),
                       if (isLoading)
-                        const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                        Center(child: CircularProgressIndicator(color: colorScheme.primary))
                       else if (!attendance['checked_in'])
                         ElevatedButton(
                           onPressed: _handleCheckIn,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: colorScheme.primary,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          child: const Text('Check In Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: const Text('Mulai Bertugas', style: TextStyle(fontWeight: FontWeight.bold)),
                         )
                       else if (attendance['checked_in'] && !attendance['checked_out'])
                         ElevatedButton(
                           onPressed: _handleCheckOut,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.danger,
+                            backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          child: const Text('Check Out Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: const Text('Akhiri Tugas', style: TextStyle(fontWeight: FontWeight.bold)),
                         )
                       else
                         Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
-                            color: AppColors.success.withOpacity(0.1),
+                            color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text(
                             'Tugas Hari Ini Selesai',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: AppColors.success,
+                              color: Colors.green,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -235,10 +266,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 const SizedBox(height: 28),
 
                 // Ringkasan Tugas Title
-                const Text(
+                Text(
                   'RINGKASAN TUGAS HARI INI',
                   style: TextStyle(
-                    color: AppColors.textMutedDark,
+                    color: mutedTextColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                     letterSpacing: 1.2,
@@ -252,18 +283,24 @@ class _DashboardPageState extends State<DashboardPage> {
                     Expanded(
                       child: _buildStatCard(
                         'Siap Ambil',
-                        '${stats['pending_tasks']}',
+                        '${stats['pending_tasks'] ?? 0}',
                         Icons.assignment_outlined,
-                        AppColors.info,
+                        Colors.blue,
+                        surfaceColor,
+                        isDark,
+                        textColor,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
                         'Dalam Kirim',
-                        '${stats['active_deliveries']}',
+                        '${stats['active_deliveries'] ?? 0}',
                         Icons.local_shipping_outlined,
-                        AppColors.warning,
+                        Colors.orange,
+                        surfaceColor,
+                        isDark,
+                        textColor,
                       ),
                     ),
                   ],
@@ -271,9 +308,105 @@ class _DashboardPageState extends State<DashboardPage> {
                 const SizedBox(height: 12),
                 _buildStatCardFull(
                   'Selesai Hari Ini',
-                  '${stats['completed_today']}',
+                  '${stats['completed_today'] ?? 0}',
                   Icons.task_alt,
-                  AppColors.success,
+                  Colors.green,
+                  surfaceColor,
+                  isDark,
+                  textColor,
+                ),
+                
+                // Quick Actions Title
+                const SizedBox(height: 28),
+                Text(
+                  'AKSI CEPAT (QUICK ACTION)',
+                  style: TextStyle(
+                    color: mutedTextColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 2x2 Grid of Quick Actions
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.4,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  children: [
+                    _buildQuickActionBtn(
+                      context,
+                      'Start Delivery',
+                      'Mulai Pengiriman',
+                      Icons.play_circle_fill_rounded,
+                      Colors.blue,
+                      () => _showQuickActionDialog(
+                        context,
+                        'Mulai Pengiriman',
+                        'Apakah Anda ingin mengubah status tugas aktif Anda ke Sedang Dikirim dan memulai perjalanan sekarang?',
+                        Icons.local_shipping_rounded,
+                        Colors.blue,
+                        confirmLabel: 'Mulai',
+                        onConfirm: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Status pengiriman berhasil diubah ke: SEDANG DIKIRIM'),
+                              backgroundColor: Colors.blue,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    _buildQuickActionBtn(
+                      context,
+                      'Scan Package',
+                      'Scan Barcode/QR',
+                      Icons.qr_code_scanner_rounded,
+                      Colors.orange,
+                      () {
+                        if (widget.onNavigateTab != null) {
+                          widget.onNavigateTab!(3); // Index 3 is Scan Package tab
+                        } else {
+                          _showScanSimulator(context);
+                        }
+                      },
+                    ),
+                    _buildQuickActionBtn(
+                      context,
+                      'Open Maps',
+                      'Navigasi Peta',
+                      Icons.near_me_rounded,
+                      Colors.green,
+                      () {
+                        if (widget.onNavigateTab != null) {
+                          widget.onNavigateTab!(2); // Index 2 is Maps tab
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Membuka Peta Navigasi...')),
+                          );
+                        }
+                      },
+                    ),
+                    _buildQuickActionBtn(
+                      context,
+                      'Call Customer',
+                      'Hubungi Pelanggan',
+                      Icons.phone_in_talk_rounded,
+                      Colors.pink,
+                      () => _showQuickActionDialog(
+                        context,
+                        'Hubungi Pelanggan',
+                        'Pilih metode untuk menghubungi pelanggan aktif:',
+                        Icons.phone_rounded,
+                        Colors.pink,
+                        isCallOption: true,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -283,33 +416,33 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildTimeCol(String title, String time, bool isActive) {
+  Widget _buildTimeCol(String title, String time, bool isActive, bool isDark, Color textColor) {
     return Column(
       children: [
         Text(
           title,
-          style: const TextStyle(color: AppColors.textMutedDark, fontSize: 12),
+          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
         ),
         const SizedBox(height: 8),
         Text(
           time,
           style: TextStyle(
-            color: isActive ? AppColors.success : AppColors.textDark,
+            color: isActive ? Colors.green : textColor,
             fontSize: 20,
-            fontWeight: FontWeight.extrabold,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(String label, String value, IconData icon, Color color, Color surfaceColor, bool isDark, Color textColor) {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,7 +456,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 style: TextStyle(
                   color: color,
                   fontSize: 24,
-                  fontWeight: FontWeight.extrabold,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
@@ -331,8 +464,8 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: 16),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textDark,
+            style: TextStyle(
+              color: textColor,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
@@ -342,13 +475,13 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildStatCardFull(String label, String value, IconData icon, Color color) {
+  Widget _buildStatCardFull(String label, String value, IconData icon, Color color, Color surfaceColor, bool isDark, Color textColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -359,8 +492,8 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(width: 16),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textDark,
+                style: TextStyle(
+                  color: textColor,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -372,11 +505,407 @@ class _DashboardPageState extends State<DashboardPage> {
             style: TextStyle(
               color: color,
               fontSize: 28,
-              fontWeight: FontWeight.extrabold,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildQuickActionBtn(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Material(
+      color: isDark ? AppColors.cardDark : Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black12,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? AppColors.textDark : AppColors.textLight,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.textMutedDark,
+                  fontSize: 11,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showQuickActionDialog(
+    BuildContext context,
+    String title,
+    String message,
+    IconData icon,
+    Color color, {
+    String confirmLabel = 'Lanjutkan',
+    VoidCallback? onConfirm,
+    bool isCallOption = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Glowing Icon Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 36),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                if (isCallOption) ...[
+                  // Call choices
+                  _buildCallOptionBtn(
+                    context,
+                    'Hubungi via WhatsApp',
+                    Icons.chat_bubble_rounded,
+                    const Color(0xFF25D366),
+                    () {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Membuka WhatsApp ke +62 812-3456-7890...'),
+                          backgroundColor: Color(0xFF25D366),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _buildCallOptionBtn(
+                    context,
+                    'Hubungi via Telepon Seluler',
+                    Icons.phone_in_talk_rounded,
+                    Colors.blue,
+                    () {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Melakukan panggilan seluler ke 081234567890...'),
+                          backgroundColor: Colors.blue,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                  ),
+                ] else ...[
+                  // Standard Confirm/Cancel
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: isDark ? Colors.white24 : Colors.black12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: Text(
+                            'Batal',
+                            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            if (onConfirm != null) onConfirm();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: color,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: Text(confirmLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCallOptionBtn(
+    BuildContext context,
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Material(
+      color: color.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const Spacer(),
+              Icon(Icons.arrow_forward_ios_rounded, color: color, size: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showScanSimulator(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool isScanned = false;
+            return Dialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              backgroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: SizedBox(
+                  height: 450,
+                  child: Stack(
+                    children: [
+                      // Camera simulation view
+                      Positioned.fill(
+                        child: Container(
+                          color: const Color(0xFF1E293B),
+                          child: Center(
+                            child: Opacity(
+                              opacity: 0.2,
+                              child: Icon(
+                                Icons.photo_camera_back_rounded,
+                                color: Colors.white.withValues(alpha: 0.8),
+                                size: 120,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      // Scanner overlay grid
+                      Positioned.fill(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 250,
+                              height: 250,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: isScanned ? Colors.green : Colors.amber, width: 2.5),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: isScanned 
+                                ? const Center(
+                                    child: Icon(Icons.check_circle_rounded, color: Colors.green, size: 80),
+                                  )
+                                : Stack(
+                                    children: [
+                                      // Laser scanning line animation simulator
+                                      TweenAnimationBuilder<double>(
+                                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                                        duration: const Duration(seconds: 2),
+                                        builder: (context, value, child) {
+                                          return Positioned(
+                                            top: value * 240,
+                                            left: 10,
+                                            right: 10,
+                                            child: Container(
+                                              height: 3,
+                                              decoration: BoxDecoration(
+                                                color: Colors.amber,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.amber.withValues(alpha: 0.6),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 1,
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              isScanned ? 'Scan Berhasil!' : 'Posisikan Barcode Paket Di Dalam Kotak',
+                              style: TextStyle(
+                                color: isScanned ? Colors.greenAccent : Colors.amberAccent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Simulator Scanner Deposusu',
+                              style: TextStyle(color: Colors.white38, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Cancel/Close button
+                      Positioned(
+                        top: 16,
+                        right: 16,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black54,
+                          child: IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Colors.white),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ),
+
+                      // Simulate click-to-scan button
+                      Positioned(
+                        bottom: 24,
+                        left: 24,
+                        right: 24,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (!isScanned)
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    isScanned = true;
+                                  });
+                                  // Auto close after 1.5s
+                                  Future.delayed(const Duration(milliseconds: 1500), () {
+                                    if (mounted) {
+                                      Navigator.of(context).pop();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Paket #DP-9021 Berhasil Discan!'),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    }
+                                  });
+                                },
+                                icon: const Icon(Icons.flash_on_rounded, color: Colors.black),
+                                label: const Text('Simulasikan Scan Paket', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.amber,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

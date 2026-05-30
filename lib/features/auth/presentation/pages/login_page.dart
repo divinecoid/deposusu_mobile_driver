@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../provider/auth_provider.dart';
+import 'otp_page.dart';
+
+// Demo credentials for testing
+const String _demoEmail = 'driver@deposusu.com';
+const String _demoPhone = '081234567890';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,14 +22,11 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final _loginController = TextEditingController();
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _loginController.dispose();
     super.dispose();
   }
 
@@ -31,17 +34,21 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.login(
-      _emailController.text.trim(),
-      _passwordController.text,
+    final success = await authProvider.requestOtp(
+      _loginController.text.trim(),
     );
 
     if (success) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Selamat datang kembali!'),
+            content: Text('Kode OTP berhasil dikirim!'),
             backgroundColor: AppColors.success,
+          ),
+        );
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => OtpPage(loginValue: _loginController.text.trim()),
           ),
         );
       }
@@ -49,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Login gagal.'),
+            content: Text(authProvider.errorMessage ?? 'Gagal mengirim OTP.'),
             backgroundColor: AppColors.danger,
           ),
         );
@@ -83,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(
                   color: AppColors.textDark,
                   fontSize: 28,
-                  fontWeight: FontWeight.extrabold,
+                  fontWeight: FontWeight.w800,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -104,10 +111,10 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: BoxDecoration(
                   color: AppColors.cardDark,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     )
@@ -118,9 +125,9 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Email Field
+                      // Login Field
                       const Text(
-                        'Email',
+                        'Nomor HP / Email',
                         style: TextStyle(
                           color: AppColors.textDark,
                           fontSize: 12,
@@ -129,13 +136,13 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
-                        controller: _emailController,
+                        controller: _loginController,
                         style: const TextStyle(color: AppColors.textDark),
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          hintText: 'driver@deposusu.com',
+                          hintText: 'Masukkan Nomor HP atau Email',
                           hintStyle: const TextStyle(color: Colors.white24),
-                          prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textMutedDark),
+                          prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.textMutedDark),
                           filled: true,
                           fillColor: AppColors.bgDark,
                           contentPadding: const EdgeInsets.symmetric(vertical: 16),
@@ -154,69 +161,21 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Email wajib diisi';
+                            return 'Nomor HP atau Email wajib diisi';
                           }
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                            return 'Format email tidak valid';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Password Field
-                      const Text(
-                        'Kata Sandi',
-                        style: TextStyle(
-                          color: AppColors.textDark,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        style: const TextStyle(color: AppColors.textDark),
-                        decoration: InputDecoration(
-                          hintText: '••••••••',
-                          hintStyle: const TextStyle(color: Colors.white24),
-                          prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textMutedDark),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                              color: AppColors.textMutedDark,
-                            ),
-                            onPressed: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
-                            },
-                          ),
-                          filled: true,
-                          fillColor: AppColors.bgDark,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Kata sandi wajib diisi';
+                          // Simple validation for email or phone number
+                          final val = value.trim();
+                          final isEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val);
+                          final isPhone = RegExp(r'^[0-9+]{8,15}$').hasMatch(val);
+                          if (!isEmail && !isPhone) {
+                            return 'Format nomor HP atau email tidak valid';
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 32),
 
-                      // Login Button
+                      // Request OTP Button
                       Container(
                         height: 52,
                         decoration: BoxDecoration(
@@ -224,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                           gradient: AppColors.primaryGradient,
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
+                              color: AppColors.primary.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             )
@@ -249,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 )
                               : const Text(
-                                  'Masuk Akun',
+                                  'Kirim Kode OTP',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -263,8 +222,13 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 24),
+
+              // Demo Credentials Card
+              _buildDemoCard(),
+
+              const SizedBox(height: 24),
               const Text(
-                'Versi 1.0.0',
+                'Versi 1.1.0',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white24,
@@ -274,6 +238,137 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDemoCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.secondary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.person_pin_circle_outlined,
+                  color: AppColors.secondary, size: 18),
+              const SizedBox(width: 8),
+              const Text(
+                'Akun Demo Kurir',
+                style: TextStyle(
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: _fillDemoCredentials,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: AppColors.secondary.withValues(alpha: 0.4)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.flash_on_rounded,
+                          color: AppColors.secondary, size: 13),
+                      SizedBox(width: 4),
+                      Text(
+                        'Isi Otomatis',
+                        style: TextStyle(
+                          color: AppColors.secondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: Colors.white10),
+          const SizedBox(height: 12),
+          _buildCredentialRow(
+            icon: Icons.phone_android_rounded,
+            label: 'No. HP',
+            value: _demoPhone,
+          ),
+          const SizedBox(height: 8),
+          _buildCredentialRow(
+            icon: Icons.email_outlined,
+            label: 'Email',
+            value: _demoEmail,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCredentialRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return GestureDetector(
+      onLongPress: () {
+        Clipboard.setData(ClipboardData(text: value));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$label disalin ke clipboard'),
+            duration: const Duration(seconds: 1),
+            backgroundColor: AppColors.secondary,
+          ),
+        );
+      },
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.textMutedDark, size: 15),
+          const SizedBox(width: 8),
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              color: AppColors.textMutedDark,
+              fontSize: 12,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: AppColors.textDark,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'monospace',
+            ),
+          ),
+          const SizedBox(width: 4),
+          const Icon(Icons.copy_outlined,
+              color: Colors.white12, size: 12),
+        ],
+      ),
+    );
+  }
+
+  void _fillDemoCredentials() {
+    _loginController.text = _demoPhone;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Nomor HP demo telah diisi!'),
+        duration: Duration(seconds: 1),
+        backgroundColor: AppColors.success,
       ),
     );
   }

@@ -1,9 +1,13 @@
 class AppConstants {
-  // If testing on android emulator, localhost is 10.0.2.2. If on iOS/Web, it is localhost.
-  static const String baseUrl = 'http://localhost:8000/api'; // Or replace with your server IP
+  // ─── BASE URL ────────────────────────────────────────────────────────────────
+  // Karena Anda menggunakan HP fisik (bukan emulator), kita gunakan IP lokal Mac:
+  // IP Mac Anda terdeteksi: 192.168.1.50
+  static const String baseUrl = 'http://192.168.1.50:8000/api';
 
   // Auth Endpoints
   static const String login = '/login';
+  static const String requestOtp = '/driver/request-otp';
+  static const String verifyOtp = '/driver/verify-otp';
   
   // Driver Endpoints
   static const String dashboard = '/driver/dashboard';
