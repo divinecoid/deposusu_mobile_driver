@@ -11,7 +11,6 @@ import 'features/order/presentation/pages/order_list_page.dart';
 import 'features/order/presentation/pages/order_history_page.dart';
 import 'features/maps/presentation/pages/maps_navigation_page.dart';
 import 'features/scan/presentation/pages/scan_package_page.dart';
-import 'features/cod/presentation/pages/cod_management_page.dart';
 import 'features/profile/presentation/pages/driver_profile_page.dart';
 import 'features/settings/presentation/pages/driver_settings_page.dart';
 import 'core/theme/app_theme.dart';
@@ -67,40 +66,95 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      DashboardPage(
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+        onNavigateTab: _onItemTapped,
+      ), // 0: Home
+      OrderListPage(
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+        onNavigateTab: _onItemTapped,
+      ), // 1: Queue Delivery
+      MapsNavigationPage(
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+        onNavigateTab: _onItemTapped,
+      ), // 2: Maps
+      ScanPackagePage(
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+        onNavigateTab: _onItemTapped,
+      ), // 3: Scan Package
+      OrderHistoryPage(
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ), // 4: History
+      DriverProfilePage(
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ), // 5: Profile
+      DriverSettingsPage(
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ), // 6: Settings
+    ];
+  }
 
   void _onItemTapped(int index) {
+    if (index == 2 || index == 3) {
+      final orderProvider = context.read<OrderProvider>();
+      final delivering = orderProvider.deliveringOrders;
+      final verified = orderProvider.verifiedOrderIds;
+
+      if (index == 2) { // Navigasi tab
+        if (delivering.isEmpty) {
+          _showWarningSnackBar('Tidak ada tugas aktif. Silakan terima tugas terlebih dahulu!');
+          return;
+        }
+        final allScanned = delivering.every((o) => verified.contains(o.id));
+        if (!allScanned) {
+          _showWarningSnackBar('Silakan scan semua paket terlebih dahulu!');
+          setState(() {
+            _selectedIndex = 3; // Redirect to Scan tab
+          });
+          return;
+        }
+      } else if (index == 3) { // Scan tab
+        if (delivering.isEmpty) {
+          _showWarningSnackBar('Tidak ada paket aktif untuk discan. Silakan terima tugas terlebih dahulu!');
+          return;
+        }
+      }
+    }
+
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  List<Widget> get _pages => [
-    DashboardPage(
-      onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-      onNavigateTab: _onItemTapped,
-    ), // 0: Home
-    OrderListPage(
-      onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-    ), // 1: Queue Delivery
-    MapsNavigationPage(
-      onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-    ), // 2: Maps
-    ScanPackagePage(
-      onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-    ), // 3: Scan Package
-    CodManagementPage(
-      onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-    ), // 4: COD
-    OrderHistoryPage(
-      onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-    ), // 5: History
-    DriverProfilePage(
-      onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-    ), // 6: Profile
-    DriverSettingsPage(
-      onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-    ), // 7: Settings
-  ];
+  void _showWarningSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.amber[800],
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +165,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       key: _scaffoldKey,
       body: _pages[_selectedIndex],
       drawer: _buildDrawer(context),
-      bottomNavigationBar: _selectedIndex > 4
+      bottomNavigationBar: _selectedIndex > 3
           ? null
           : BottomNavigationBar(
               currentIndex: _selectedIndex,
@@ -141,11 +195,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   icon: Icon(Icons.qr_code_scanner_outlined),
                   activeIcon: Icon(Icons.qr_code_scanner),
                   label: 'Scan',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.payments_outlined),
-                  activeIcon: Icon(Icons.payments),
-                  label: 'Bayar',
                 ),
               ],
             ),
@@ -211,10 +260,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   _buildDrawerTile(1, 'Antrean Pengiriman', Icons.local_shipping_rounded),
                   _buildDrawerTile(2, 'Navigasi', Icons.near_me_rounded),
                   _buildDrawerTile(3, 'Scan Paket', Icons.qr_code_scanner_rounded),
-                  _buildDrawerTile(4, 'Bayar di Tempat', Icons.payments_rounded),
-                  _buildDrawerTile(5, 'Riwayat Pengiriman', Icons.history_rounded),
-                  _buildDrawerTile(6, 'Profil', Icons.person_rounded),
-                  _buildDrawerTile(7, 'Pengaturan', Icons.settings_rounded),
+                  _buildDrawerTile(4, 'Riwayat Pengiriman', Icons.history_rounded),
+                  _buildDrawerTile(5, 'Profil', Icons.person_rounded),
+                  _buildDrawerTile(6, 'Pengaturan', Icons.settings_rounded),
                 ],
               ),
             ),
@@ -259,9 +307,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         ),
         onTap: () {
           Navigator.pop(context); // Close Drawer
-          setState(() {
-            _selectedIndex = index;
-          });
+          _onItemTapped(index);
         },
       ),
     );

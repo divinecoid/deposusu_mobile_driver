@@ -4,11 +4,13 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../order/presentation/provider/order_provider.dart';
 import '../../../order/data/models/order_model.dart';
+import '../../../order/presentation/pages/route_optimization_page.dart';
 
 class ScanPackagePage extends StatefulWidget {
   final VoidCallback? onOpenDrawer;
+  final ValueChanged<int>? onNavigateTab;
 
-  const ScanPackagePage({super.key, this.onOpenDrawer});
+  const ScanPackagePage({super.key, this.onOpenDrawer, this.onNavigateTab});
 
   @override
   State<ScanPackagePage> createState() => _ScanPackagePageState();
@@ -47,6 +49,74 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
     super.dispose();
   }
 
+  void _showAllVerifiedCongratsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final provider = context.read<OrderProvider>();
+        return Dialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircleAvatar(
+                  radius: 40,
+                  backgroundColor: AppColors.success,
+                  child: Icon(Icons.verified_rounded, color: Colors.white, size: 48),
+                ),
+                 const SizedBox(height: 20),
+                const Text(
+                  'Semua Paket Terverifikasi! 🎉',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Bagus! Semua paket telah berhasil dipindai dan dicocokkan dengan manifes sistem. Rute pengiriman optimal Anda telah disiapkan secara otomatis.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  height: 48,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: AppColors.primaryGradient,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context); // Close congrats dialog
+                      widget.onNavigateTab?.call(2); // Switch to Navigasi tab (index 2)
+                    },
+                    icon: const Icon(Icons.directions_car_rounded, color: Colors.white),
+                    label: const Text('Mulai Pengantaran', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _triggerScanSimulation(OrderModel order) async {
     if (_isScanned) return;
 
@@ -70,13 +140,14 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
       ),
     );
 
-    // Wait 1.5 seconds for animation and then proceed to pickup order
+    // Wait 1.5 seconds for animation and then proceed to verify order
     await Future.delayed(const Duration(milliseconds: 1500));
     
     if (!mounted) return;
 
     final provider = context.read<OrderProvider>();
-    final success = await provider.pickupOrder(order.id);
+    provider.verifyOrder(order.id);
+    const success = true;
 
     if (mounted) {
       if (success) {
@@ -103,7 +174,7 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Paket ${order.orderNumber} atas nama ${order.customerName} telah berhasil dimasukkan ke antrean Dalam Pengantaran.',
+                    'Paket ${order.orderNumber} atas nama ${order.customerName} telah berhasil dipindai dan dicocokkan.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
                   ),
@@ -115,8 +186,12 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                         _isScanned = false;
                         _scannedCode = null;
                       });
-                      provider.fetchPendingOrders();
-                      provider.fetchDeliveringOrders();
+                      
+                      final delivering = provider.deliveringOrders;
+                      final allScanned = delivering.isNotEmpty && delivering.every((o) => provider.verifiedOrderIds.contains(o.id));
+                      if (allScanned) {
+                        _showAllVerifiedCongratsDialog();
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
@@ -147,14 +222,15 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
   }
 
   void _submitManualCode() {
-    final code = _manualCodeController.text.trim().toUpperCase();
+    final code = _manualCodeController.text.trim().toUpperCase().replaceAll('#', '');
     if (code.isEmpty) return;
 
     final provider = context.read<OrderProvider>();
-    final pending = provider.pendingOrders;
+    final delivering = provider.deliveringOrders;
+    final unverifiedDelivering = delivering.where((o) => !provider.verifiedOrderIds.contains(o.id)).toList();
 
-    final matchingOrder = pending.firstWhere(
-      (o) => o.orderNumber == code,
+    final matchingOrder = unverifiedDelivering.firstWhere(
+      (o) => o.orderNumber.toUpperCase().replaceAll('#', '') == code,
       orElse: () => OrderModel(
         id: -1,
         orderNumber: '',
@@ -174,18 +250,137 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Nomor resi "$code" tidak ditemukan dalam daftar siap ambil.'),
+          content: Text('Nomor resi "$code" tidak ditemukan dalam antrean scan aktif.'),
           backgroundColor: Colors.red,
         ),
       );
     }
   }
 
+  Widget _buildProgressStepper(int currentStep) {
+    final steps = [
+      {'title': 'Terima Tugas', 'icon': Icons.assignment_turned_in_rounded},
+      {'title': 'Scan Paket', 'icon': Icons.qr_code_scanner_rounded},
+      {'title': 'Optimasi Rute', 'icon': Icons.insights_rounded},
+      {'title': 'Antar Paket', 'icon': Icons.explore_rounded},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: List.generate(steps.length * 2 - 1, (index) {
+          if (index.isOdd) {
+            // Connector line
+            final stepIdx = (index - 1) ~/ 2;
+            final isCompleted = stepIdx < currentStep - 1;
+            return Expanded(
+              child: Container(
+                height: 2.5,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: isCompleted ? AppColors.success : Colors.white10,
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            );
+          }
+
+          // Step Node
+          final stepIdx = index ~/ 2;
+          final stepNum = stepIdx + 1;
+          final step = steps[stepIdx];
+          final isActive = stepNum == currentStep;
+          final isCompleted = stepNum < currentStep;
+
+          Color nodeBgColor;
+          Color nodeBorderColor;
+          Color textColor;
+          Widget nodeIcon;
+
+          if (isCompleted) {
+            nodeBgColor = AppColors.success.withValues(alpha: 0.15);
+            nodeBorderColor = AppColors.success;
+            textColor = AppColors.success;
+            nodeIcon = const Icon(Icons.check, color: AppColors.success, size: 13);
+          } else if (isActive) {
+            nodeBgColor = AppColors.primary.withValues(alpha: 0.18);
+            nodeBorderColor = AppColors.secondary;
+            textColor = Colors.white;
+            nodeIcon = Icon(step['icon'] as IconData, color: AppColors.secondary, size: 13);
+          } else {
+            nodeBgColor = Colors.white.withValues(alpha: 0.03);
+            nodeBorderColor = Colors.white10;
+            textColor = Colors.white30;
+            nodeIcon = Text(
+              '$stepNum',
+              style: const TextStyle(
+                color: Colors.white30,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          }
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: nodeBgColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: nodeBorderColor, width: 1.5),
+                  boxShadow: isActive ? [
+                    BoxShadow(
+                      color: AppColors.secondary.withValues(alpha: 0.25),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    )
+                  ] : null,
+                ),
+                child: Center(child: nodeIcon),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                step['title'] as String,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 9,
+                  fontWeight: isActive || isCompleted ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final orderProvider = context.watch<OrderProvider>();
-    final pending = orderProvider.pendingOrders;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final delivering = orderProvider.deliveringOrders;
+    final unverifiedDelivering = delivering.where((o) => !orderProvider.verifiedOrderIds.contains(o.id)).toList();
+
+    int currentStep = 2;
+    if (delivering.isNotEmpty) {
+      final allScanned = delivering.every((o) => orderProvider.verifiedOrderIds.contains(o.id));
+      currentStep = allScanned ? 3 : 2;
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -199,7 +394,7 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
               )
             : null,
         title: const Text(
-          'Paket Siap Kirim',
+          'Scan Paket Kurir',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
@@ -220,16 +415,19 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Stepper Header
+            _buildProgressStepper(currentStep),
+
             // 1. Camera View Finder Simulation box
             GestureDetector(
               onTap: () {
-                if (pending.isNotEmpty) {
+                if (unverifiedDelivering.isNotEmpty) {
                   setState(() {
-                    _manualCodeController.text = pending.first.orderNumber;
+                    _manualCodeController.text = unverifiedDelivering.first.orderNumber;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Simulasi Scan: Kode ${pending.first.orderNumber} terbaca!'),
+                      content: Text('Simulasi Scan: Kode ${unverifiedDelivering.first.orderNumber} terbaca!'),
                       backgroundColor: Colors.blue[600],
                       duration: const Duration(seconds: 1),
                     ),
@@ -237,110 +435,112 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                 }
               },
               child: Container(
-                height: 300,
-                color: Colors.black,
+                height: 260,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white10),
+                ),
                 child: Stack(
-                children: [
-                  // Camera simulation background dark gray
-                  Positioned.fill(
-                    child: Container(
-                      color: const Color(0xFF1E293B),
-                      child: Center(
-                        child: Icon(
-                          Icons.qr_code_scanner,
-                          size: 140,
-                          color: Colors.white.withValues(alpha: _flashOn ? 0.08 : 0.03),
-                        ),
+                  children: [
+                    Center(
+                      child: Icon(
+                        Icons.qr_code_scanner,
+                        size: 120,
+                        color: Colors.white.withValues(alpha: _flashOn ? 0.08 : 0.03),
                       ),
                     ),
-                  ),
 
-                  // Overlay Scan Frame with laser
-                  Center(
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: _isScanned ? Colors.green : AppColors.secondary,
-                          width: 2.5,
+                    // Overlay Scan Frame with laser
+                    Center(
+                      child: Container(
+                        width: 170,
+                        height: 170,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _isScanned ? Colors.green : AppColors.secondary,
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: _isScanned
-                          ? const Center(
-                              child: Icon(Icons.check_circle_rounded, color: Colors.green, size: 70),
-                            )
-                          : AnimatedBuilder(
-                              animation: _laserAnimation,
-                              builder: (context, child) {
-                                return Stack(
-                                  children: [
-                                    Positioned(
-                                      top: _laserAnimation.value * 190,
-                                      left: 8,
-                                      right: 8,
-                                      child: Container(
-                                        height: 3.5,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.secondary,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: AppColors.secondary.withValues(alpha: 0.8),
-                                              blurRadius: 8,
-                                              spreadRadius: 1,
-                                            )
-                                          ],
+                        child: _isScanned
+                            ? const Center(
+                                child: Icon(Icons.check_circle_rounded, color: Colors.green, size: 60),
+                              )
+                            : AnimatedBuilder(
+                                animation: _laserAnimation,
+                                builder: (context, child) {
+                                  return Stack(
+                                    children: [
+                                      Positioned(
+                                        top: _laserAnimation.value * 160,
+                                        left: 8,
+                                        right: 8,
+                                        child: Container(
+                                          height: 3.5,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.secondary,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.secondary.withValues(alpha: 0.8),
+                                                blurRadius: 8,
+                                                spreadRadius: 1,
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                    ),
-                  ),
-
-                  // Flash active overlay indicator
-                  if (_flashOn)
-                    Positioned.fill(
-                      child: Container(
-                        color: Colors.white.withValues(alpha: 0.04),
+                                    ],
+                                  );
+                                },
+                              ),
                       ),
                     ),
 
-                  Positioned(
-                    bottom: 12,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Text(
-                        _isScanned ? 'Centang Sukses! Memproses...' : 'Arahkan kamera ke barcode resi paket',
-                        style: TextStyle(
-                          color: _isScanned ? Colors.greenAccent : AppColors.secondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                    // Flash active overlay indicator
+                    if (_flashOn)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.04),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+
+                    Positioned(
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Text(
+                          _isScanned ? 'Centang Sukses! Memproses...' : 'Arahkan kamera ke barcode resi paket',
+                          style: TextStyle(
+                            color: _isScanned ? Colors.greenAccent : AppColors.secondary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             ),
 
             // 2. Manual Resi Entry Input
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _manualCodeController,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: 'Input Kode Resi Manual (e.g. TRX-101)',
-                        hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+                        hintText: 'Input Kode Resi Manual (e.g. ORD-001)',
+                        hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
                         fillColor: Colors.white.withValues(alpha: 0.06),
                         filled: true,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -365,9 +565,9 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
               ),
             ),
 
-            // 3. List of Prepared Packages waiting to be scanned
+            // 3. List of Active Packages waiting to be scanned
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -375,10 +575,10 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'ANTREAN PAKET',
+                        'ANTREAN VERIFIKASI PAKET',
                         style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.1,
                         ),
@@ -390,7 +590,7 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '${pending.length} Paket',
+                          '${unverifiedDelivering.length} Belum Discan',
                           style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -398,7 +598,7 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                   ),
                   const SizedBox(height: 12),
                   
-                  if (pending.isEmpty)
+                  if (delivering.isEmpty)
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
@@ -407,18 +607,66 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                       ),
                       child: const Center(
                         child: Text(
-                          'Semua paket telah di-scan dan siap dikirim!',
-                          style: TextStyle(color: Colors.white38, fontSize: 13),
+                          'Tidak ada paket aktif untuk dikirim.\nAmbil tugas baru terlebih dahulu di menu Kirim.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white38, fontSize: 13, height: 1.4),
                         ),
+                      ),
+                    )
+                  else if (unverifiedDelivering.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.green.withValues(alpha: 0.25)),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.check_circle_outline_rounded, color: Colors.green, size: 48),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Semua Paket Terverifikasi! 🎉',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Semua paket telah berhasil dipindai. Rute optimal pengiriman Anda sudah disiapkan otomatis.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.4),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            height: 44,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              gradient: AppColors.primaryGradient,
+                            ),
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                widget.onNavigateTab?.call(2); // Auto switch to Navigasi tab (index 2)
+                              },
+                              icon: const Icon(Icons.directions_car_rounded, color: Colors.white, size: 16),
+                              label: const Text('Mulai Pengantaran', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   else
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: pending.length,
+                      itemCount: unverifiedDelivering.length,
                       itemBuilder: (context, index) {
-                        final order = pending[index];
+                        final order = unverifiedDelivering[index];
                         return Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(16),
@@ -430,31 +678,52 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    order.orderNumber,
-                                    style: const TextStyle(
-                                      color: AppColors.secondary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          order.orderNumber,
+                                          style: const TextStyle(
+                                            color: AppColors.secondary,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: const Text(
+                                            '⚠️ Belum Discan',
+                                            style: TextStyle(color: Colors.orange, fontSize: 8, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    order.customerName,
-                                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    order.customerAddress,
-                                    style: const TextStyle(color: Colors.white38, fontSize: 11),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      order.customerName,
+                                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      order.customerAddress,
+                                      style: const TextStyle(color: Colors.white38, fontSize: 11),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 12),
                               ElevatedButton.icon(
                                 onPressed: () => _triggerScanSimulation(order),
                                 icon: const Icon(Icons.flash_on, size: 12, color: Colors.black),

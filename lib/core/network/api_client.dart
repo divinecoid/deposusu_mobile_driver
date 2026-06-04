@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -26,7 +27,7 @@ class ApiClient {
 
   Future<http.Response> get(String endpoint, {Map<String, String>? queryParams}) async {
     final uri = Uri.parse('${AppConstants.baseUrl}$endpoint').replace(queryParameters: queryParams);
-    return await _client.get(uri, headers: _headers);
+    return await _client.get(uri, headers: _headers).timeout(const Duration(seconds: 3));
   }
 
   Future<http.Response> post(String endpoint, {Map<String, dynamic>? body}) async {
@@ -35,7 +36,7 @@ class ApiClient {
       uri,
       headers: _headers,
       body: body != null ? jsonEncode(body) : null,
-    );
+    ).timeout(const Duration(seconds: 3));
   }
 
   /// Sends a multipart POST request (used for uploading proof photo)
@@ -68,6 +69,6 @@ class ApiClient {
     );
     request.files.add(multipartFile);
 
-    return await request.send();
+    return await request.send().timeout(const Duration(seconds: 5));
   }
 }

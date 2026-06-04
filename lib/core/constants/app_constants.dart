@@ -2,7 +2,8 @@ class AppConstants {
   // ─── BASE URL ────────────────────────────────────────────────────────────────
   // Karena Anda menggunakan HP fisik (bukan emulator), kita gunakan IP lokal Mac:
   // IP Mac Anda terdeteksi: 192.168.1.50
-  static const String baseUrl = 'http://192.168.1.50:8000/api';
+  // static const String baseUrl = 'http://192.168.1.58:8000/api';
+  static const String baseUrl = 'https://deposusu.divineproject.my.id/api';
 
   // Auth Endpoints
   static const String login = '/login';

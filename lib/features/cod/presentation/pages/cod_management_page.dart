@@ -24,6 +24,10 @@ class _CodManagementPageState extends State<CodManagementPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<OrderProvider>().fetchDeliveringOrders();
+      context.read<OrderProvider>().fetchCompletedOrders();
+    });
   }
 
 
@@ -371,7 +375,7 @@ class _CodManagementPageState extends State<CodManagementPage> {
                 itemCount: _codOrders.length,
                 itemBuilder: (context, index) {
                   final order = _codOrders[index];
-                  final isPaid = order.paymentStatus.toUpperCase().contains('PAID');
+                  final isPaid = order.paymentStatus.toUpperCase().startsWith('PAID');
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),

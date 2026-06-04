@@ -15,142 +15,28 @@ class OrderProvider extends ChangeNotifier {
   List<OrderModel> _deliveringOrders = [];
   List<OrderModel> _completedOrders = [];
   OrderModel? _currentOrderDetail;
+  
+  // Track verified/scanned order IDs in the current active batch
+  final List<int> _verifiedOrderIds = [];
 
   OrderProvider(this.apiClient);
 
+  List<int> get verifiedOrderIds => List.unmodifiable(_verifiedOrderIds);
+
+  void verifyOrder(int id) {
+    if (!_verifiedOrderIds.contains(id)) {
+      _verifiedOrderIds.add(id);
+      notifyListeners();
+    }
+  }
+
+  void clearVerifiedOrders() {
+    _verifiedOrderIds.clear();
+    notifyListeners();
+  }
+
   void _initMockData() {
-    if (_mockInitialized) return;
-    _mockInitialized = true;
-    _pendingOrders = [
-      OrderModel(
-        id: 101,
-        orderNumber: 'TRX-101',
-        customerName: 'Ahmad Pelanggan',
-        customerPhone: '08111222333',
-        customerAddress: 'Jl. Sudirman No. 10, Jakarta',
-        status: 'prepared',
-        paymentStatus: 'paid',
-        totalAmount: 150000,
-        distance: 2.5,
-        deadline: DateTime.now().add(const Duration(hours: 1)),
-        items: [
-          OrderItemModel(id: 1, quantity: 2, price: 50000, subtotal: 100000, productName: 'Susu Murni', productSku: 'SM-01'),
-          OrderItemModel(id: 2, quantity: 1, price: 50000, subtotal: 50000, productName: 'Susu Coklat', productSku: 'SC-01'),
-        ],
-      ),
-      OrderModel(
-        id: 102,
-        orderNumber: 'TRX-102',
-        customerName: 'Siti Pembeli',
-        customerPhone: '08999888777',
-        customerAddress: 'Jl. Thamrin No. 5, Jakarta',
-        status: 'prepared',
-        paymentStatus: 'unpaid',
-        totalAmount: 200000,
-        distance: 5.1,
-        deadline: DateTime.now().add(const Duration(minutes: 30)),
-        items: [
-          OrderItemModel(id: 3, quantity: 4, price: 50000, subtotal: 200000, productName: 'Susu Strawberry', productSku: 'ST-01'),
-        ],
-      ),
-    ];
-    _deliveringOrders = [
-      OrderModel(
-        id: 100,
-        orderNumber: 'TRX-100',
-        customerName: 'Bapak Budi',
-        customerPhone: '08555444333',
-        customerAddress: 'Komp. Polri, Pasar Minggu',
-        status: 'ondelivery',
-        paymentStatus: 'paid',
-        totalAmount: 75000,
-        distance: 4.5,
-        deadline: DateTime.now().add(const Duration(minutes: 120)),
-        pickedUpAt: DateTime.now().subtract(const Duration(minutes: 15)),
-        items: [
-          OrderItemModel(id: 4, quantity: 1, price: 75000, subtotal: 75000, productName: 'Paket Susu Mix', productSku: 'PM-01'),
-        ],
-      ),
-      OrderModel(
-        id: 103,
-        orderNumber: 'TRX-103',
-        customerName: 'Ibu Ratna Susu',
-        customerPhone: '08777666555',
-        customerAddress: 'Jl. Kemang Raya No. 12, Mampang',
-        status: 'ondelivery',
-        paymentStatus: 'paid',
-        totalAmount: 120000,
-        distance: 1.2,
-        deadline: DateTime.now().add(const Duration(minutes: 40)),
-        pickedUpAt: DateTime.now().subtract(const Duration(minutes: 10)),
-        items: [
-          OrderItemModel(id: 5, quantity: 2, price: 60000, subtotal: 120000, productName: 'Susu Premium Pasteur (Frozen)', productSku: 'SP-pasteur'),
-        ],
-      ),
-      OrderModel(
-        id: 104,
-        orderNumber: 'TRX-104',
-        customerName: 'Mas Danu',
-        customerPhone: '081234567890',
-        customerAddress: 'Jl. Fatmawati Raya No. 88, Cilandak',
-        status: 'ondelivery',
-        paymentStatus: 'unpaid',
-        totalAmount: 95000,
-        distance: 2.8,
-        deadline: DateTime.now().add(const Duration(minutes: 60)),
-        pickedUpAt: DateTime.now().subtract(const Duration(minutes: 5)),
-        items: [
-          OrderItemModel(id: 6, quantity: 1, price: 95000, subtotal: 95000, productName: 'Paket Susu Segar XL', productSku: 'PS-XL'),
-        ],
-      ),
-      OrderModel(
-        id: 105,
-        orderNumber: 'TRX-105',
-        customerName: 'Mbak Dita',
-        customerPhone: '081234567895',
-        customerAddress: 'Jl. Wijaya Timur No. 4, Kebayoran Baru',
-        status: 'ondelivery',
-        paymentStatus: 'paid',
-        totalAmount: 180000,
-        distance: 3.5,
-        deadline: DateTime.now().add(const Duration(minutes: 15)),
-        pickedUpAt: DateTime.now().subtract(const Duration(minutes: 2)),
-        items: [
-          OrderItemModel(id: 7, quantity: 3, price: 60000, subtotal: 180000, productName: 'Susu UHT Full Cream (Instant)', productSku: 'SU-FC'),
-        ],
-      ),
-      OrderModel(
-        id: 106,
-        orderNumber: 'TRX-106',
-        customerName: 'Pak Andi',
-        customerPhone: '081234567899',
-        customerAddress: 'Jl. Melawai Raya No. 45, Kebayoran Baru',
-        status: 'ondelivery',
-        paymentStatus: 'paid',
-        totalAmount: 110000,
-        distance: 2.0,
-        deadline: DateTime.now().add(const Duration(minutes: 90)),
-        pickedUpAt: DateTime.now().subtract(const Duration(minutes: 8)),
-        items: [
-          OrderItemModel(id: 8, quantity: 2, price: 55000, subtotal: 110000, productName: 'Susu Yogurt Pack (Same Day)', productSku: 'SY-SD'),
-        ],
-      ),
-    ];
-    _completedOrders = [
-      OrderModel(
-        id: 99,
-        orderNumber: 'TRX-099',
-        customerName: 'Ibu Ratna',
-        customerPhone: '08777666555',
-        customerAddress: 'Jl. Mangga Dua Raya',
-        status: 'completed',
-        paymentStatus: 'paid',
-        totalAmount: 320000,
-        pickedUpAt: DateTime.now().subtract(const Duration(hours: 3)),
-        deliveredAt: DateTime.now().subtract(const Duration(hours: 2)),
-        items: [],
-      ),
-    ];
+    // Mock data disabled to use actual data only
   }
 
   bool get isLoading => _isLoading;
@@ -176,8 +62,8 @@ class OrderProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal memuat pesanan');
       }
     } catch (e) {
-      _errorMessage = 'Mode Offline: $e';
-      _initMockData();
+      _errorMessage = e.toString();
+      _pendingOrders = [];
     }
 
     _isLoading = false;
@@ -200,8 +86,8 @@ class OrderProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal memuat pesanan');
       }
     } catch (e) {
-      _errorMessage = 'Mode Offline: $e';
-      _initMockData();
+      _errorMessage = e.toString();
+      _deliveringOrders = [];
     }
 
     _isLoading = false;
@@ -224,8 +110,8 @@ class OrderProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal memuat pesanan');
       }
     } catch (e) {
-      _errorMessage = 'Mode Offline: $e';
-      _initMockData();
+      _errorMessage = e.toString();
+      _completedOrders = [];
     }
 
     _isLoading = false;
@@ -248,23 +134,7 @@ class OrderProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal memuat detail pesanan');
       }
     } catch (e) {
-      _errorMessage = 'Mode Offline: $e';
-      // MOCK FALLBACK
-      final allOrders = [..._pendingOrders, ..._deliveringOrders, ..._completedOrders];
-      _currentOrderDetail = allOrders.firstWhere(
-        (o) => o.id == id,
-        orElse: () => OrderModel(
-          id: id,
-          orderNumber: 'TRX-$id',
-          customerName: 'Customer $id',
-          customerPhone: '0812345678',
-          customerAddress: 'Alamat Tujuan $id',
-          status: 'prepared',
-          paymentStatus: 'paid',
-          totalAmount: 100000,
-          items: [],
-        ),
-      );
+      _errorMessage = e.toString();
     }
 
     _isLoading = false;
@@ -298,32 +168,36 @@ class OrderProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal mengambil tugas');
       }
     } catch (e) {
-      _errorMessage = 'Mode Offline: $e';
-      // MOCK FALLBACK
-      final idx = _pendingOrders.indexWhere((o) => o.id == id);
-      if (idx != -1) {
-        final order = _pendingOrders.removeAt(idx);
-        final updatedOrder = OrderModel(
-          id: order.id,
-          orderNumber: order.orderNumber,
-          customerName: order.customerName,
-          customerPhone: order.customerPhone,
-          customerAddress: order.customerAddress,
-          status: 'ondelivery',
-          paymentStatus: order.paymentStatus,
-          totalAmount: order.totalAmount,
-          pickedUpAt: DateTime.now(),
-          items: order.items,
-        );
-        _deliveringOrders.add(updatedOrder);
-        _currentOrderDetail = updatedOrder;
-      }
-      
+      _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return true; // Still return true for mock flow
+      return false;
     }
+  }
 
+  Future<bool> rejectOrder(int id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await apiClient.post('${AppConstants.orders}/$id/reject', body: {});
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        _pendingOrders.removeWhere((o) => o.id == id);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        throw Exception(data['message'] ?? 'Gagal menolak penawaran');
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> finishOrder(int id, File photo, {String receivedBy = ''}) async {
@@ -361,35 +235,11 @@ class OrderProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal menyelesaikan pengiriman');
       }
     } catch (e) {
-      _errorMessage = 'Mode Offline: $e';
-      // MOCK FALLBACK
-      final idx = _deliveringOrders.indexWhere((o) => o.id == id);
-      if (idx != -1) {
-        final order = _deliveringOrders.removeAt(idx);
-        final updatedOrder = OrderModel(
-          id: order.id,
-          orderNumber: order.orderNumber,
-          customerName: order.customerName,
-          customerPhone: order.customerPhone,
-          customerAddress: order.customerAddress,
-          status: 'completed',
-          paymentStatus: order.paymentStatus.toUpperCase() == 'UNPAID' ? 'PAID_CASH' : order.paymentStatus,
-          totalAmount: order.totalAmount,
-          pickedUpAt: order.pickedUpAt,
-          deliveredAt: DateTime.now(),
-          deliveryProofPhoto: photo.path,
-          receivedBy: receivedBy.isNotEmpty ? receivedBy : null,
-          items: order.items,
-        );
-        _completedOrders.insert(0, updatedOrder);
-        _currentOrderDetail = updatedOrder;
-      }
-
+      _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return true;
+      return false;
     }
-
   }
 
   Future<bool> failOrder(int id, {required String actionType, required String reason, String? rescheduleDate}) async {
@@ -423,38 +273,10 @@ class OrderProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal memproses kegagalan pengiriman');
       }
     } catch (e) {
-      _errorMessage = 'Mode Offline: $e';
-      // MOCK FALLBACK
-      final idx = _deliveringOrders.indexWhere((o) => o.id == id);
-      if (idx != -1) {
-        final order = _deliveringOrders.removeAt(idx);
-        final updatedOrder = OrderModel(
-          id: order.id,
-          orderNumber: order.orderNumber,
-          customerName: order.customerName,
-          customerPhone: order.customerPhone,
-          customerAddress: order.customerAddress,
-          status: actionType == 'reschedule' ? 'failed_reschedule' : 'failed_returned',
-          paymentStatus: order.paymentStatus,
-          totalAmount: order.totalAmount,
-          pickedUpAt: order.pickedUpAt,
-          items: order.items,
-          distance: order.distance,
-          deadline: order.deadline,
-          assignedBy: order.assignedBy,
-        );
-
-        if (actionType == 'reschedule') {
-          _pendingOrders.add(updatedOrder);
-        } else {
-          _completedOrders.insert(0, updatedOrder);
-        }
-        _currentOrderDetail = updatedOrder;
-      }
-
+      _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return true;
+      return false;
     }
   }
 
@@ -521,6 +343,11 @@ class OrderProvider extends ChangeNotifier {
       );
     }
 
+    notifyListeners();
+  }
+
+  void setDeliveringOrders(List<OrderModel> orders) {
+    _deliveringOrders = orders;
     notifyListeners();
   }
 }

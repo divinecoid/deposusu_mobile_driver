@@ -15,6 +15,9 @@ class OrderModel {
   final String? assignedBy;
   final double? distance;
   final DateTime? deadline;
+  final String orderSource; // Added: 'app', 'web', 'shopee', 'tokopedia', 'tiktok', 'manual'
+  final String deliveryType; // 'instant', 'sameday', 'scheduled'
+  final bool isUrgent;
 
   OrderModel({
     required this.id,
@@ -33,6 +36,9 @@ class OrderModel {
     this.assignedBy,
     this.distance,
     this.deadline,
+    this.orderSource = 'app', // Default value
+    this.deliveryType = 'sameday',
+    this.isUrgent = false,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -53,6 +59,9 @@ class OrderModel {
       distance: json['distance'] != null ? double.tryParse(json['distance'].toString()) : null,
       deadline: json['deadline'] != null ? DateTime.tryParse(json['deadline']) : null,
       items: (json['items'] as List?)?.map((i) => OrderItemModel.fromJson(i)).toList() ?? [],
+      orderSource: json['order_source'] ?? 'app',
+      deliveryType: json['delivery_type'] ?? 'sameday',
+      isUrgent: json['is_urgent'] == true || json['is_urgent'] == 1,
     );
   }
 }

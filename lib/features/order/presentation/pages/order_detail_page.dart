@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image/image.dart' as img;
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/watermark_util.dart';
 import '../provider/order_provider.dart';
@@ -22,6 +23,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   File? _qrisPaymentProof;      // Foto bukti pembayaran QRIS
   final _picker = ImagePicker();
   final _receivedByController = TextEditingController();
+  bool _isSimulating = false;
 
 
   String _actionType = 'reschedule'; // 'reschedule' or 'return'
@@ -112,8 +114,146 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   }
 
   Future<void> _capturePhotoAndFinish(OrderModel order) async {
-    // Langsung buka kamera — tanpa opsi galeri
-    await _pickImage(ImageSource.camera, order);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Bukti Pengiriman Paket',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Pilih metode pengambilan foto bukti serah terima paket',
+                style: TextStyle(color: AppColors.textMutedDark, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera, order);
+                },
+                icon: const Icon(Icons.camera_alt, color: Colors.white),
+                label: const Text('Buka Kamera', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery, order);
+                },
+                icon: const Icon(Icons.photo_library_outlined, color: AppColors.secondary),
+                label: const Text('Pilih dari Galeri', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.secondary)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.secondary, width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  _simulatePhotoSuccess(order);
+                },
+                icon: const Icon(Icons.science_rounded, color: Colors.white),
+                label: const Text('Simulasi Foto Sukses (Mock)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.success,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _simulatePhotoSuccess(OrderModel order) async {
+    setState(() {
+      _isSimulating = true;
+    });
+    try {
+      final image = img.Image(width: 800, height: 600);
+      img.fill(image, color: img.ColorRgb8(30, 41, 59));
+      
+      img.drawString(
+        image, 
+        'BUKTI PENGIRIMAN DEPOSUSU', 
+        font: img.arial48, 
+        x: 50, 
+        y: 100, 
+        color: img.ColorRgb8(255, 255, 255),
+      );
+      img.drawString(
+        image, 
+        'PESANAN: ${order.orderNumber}', 
+        font: img.arial24, 
+        x: 50, 
+        y: 180, 
+        color: img.ColorRgb8(16, 185, 129),
+      );
+      img.drawString(
+        image, 
+        'STATUS: SEDANG DISERAHKAN (MOCK)', 
+        font: img.arial24, 
+        x: 50, 
+        y: 220, 
+        color: img.ColorRgb8(251, 191, 36),
+      );
+      
+      final jpegBytes = img.encodeJpg(image, quality: 80);
+      final tempDir = Directory.systemTemp;
+      final file = File('${tempDir.path}/mock_delivery_${order.orderNumber}.jpg');
+      await file.writeAsBytes(jpegBytes);
+
+      final File watermarkedFile = await WatermarkUtil.addDeliveryWatermark(
+        imageFile: file,
+        orderId: order.orderNumber,
+        driverId: 'DRV-001',
+        status: 'DELIVERED',
+      );
+
+      setState(() {
+        _image = watermarkedFile;
+        _isSimulating = false;
+      });
+
+      _showUploadConfirmDialog();
+    } catch (e) {
+      setState(() {
+        _isSimulating = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error simulasi foto: $e'), backgroundColor: AppColors.danger),
+        );
+      }
+    }
   }
 
 
@@ -744,7 +884,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget build(BuildContext context) {
     final orderProvider = context.watch<OrderProvider>();
     final order = orderProvider.currentOrderDetail;
-    final isLoading = orderProvider.isLoading;
+    final isLoading = orderProvider.isLoading || _isSimulating;
 
     if (isLoading && order == null) {
       return Scaffold(
@@ -833,13 +973,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: (order.paymentStatus.toUpperCase().contains('PAID') ? AppColors.success : AppColors.danger).withValues(alpha: 0.1),
+                          color: (order.paymentStatus.toUpperCase().startsWith('PAID') ? AppColors.success : AppColors.danger).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          order.paymentStatus.toUpperCase().contains('PAID') ? 'LUNAS' : 'BELUM LUNAS',
+                          order.paymentStatus.toUpperCase().startsWith('PAID') ? 'LUNAS' : 'BELUM LUNAS',
                           style: TextStyle(
-                            color: order.paymentStatus.toUpperCase().contains('PAID') ? AppColors.success : AppColors.danger,
+                            color: order.paymentStatus.toUpperCase().startsWith('PAID') ? AppColors.success : AppColors.danger,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -1211,7 +1351,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: !order.paymentStatus.toUpperCase().contains('PAID')
+                    child: !order.paymentStatus.toUpperCase().startsWith('PAID')
                         ? ElevatedButton.icon(
                             onPressed: () => _showQrisModal(order),
                             icon: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 18),

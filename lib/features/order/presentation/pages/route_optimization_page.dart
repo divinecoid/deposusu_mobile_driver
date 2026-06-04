@@ -108,27 +108,36 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
 
   void _solveRoute() {
     setState(() {
-      // 1. Classify and map orders
       final List<OrderModel> temp = List.from(widget.orders);
       
       if (_selectedMode == OptimizationMode.slaFirst) {
-        // High Priority First (Instant, Frozen Food, Same Day) with Predictive Dispatch
-        // Order: TRX-105 (Instant, 15m), TRX-103 (Frozen, 40m), TRX-106 (Same Day, 90m),
-        // followed by TRX-104 (Regular, 60m), and TRX-100 (Non Urgent, 120m)
         temp.sort((a, b) {
           final aPri = _getPriority(a);
           final bPri = _getPriority(b);
           
+          // 1. Sort by Priority (Instant > Same Day > Scheduled)
           if (aPri != bPri) {
-            return bPri.index.compareTo(aPri.index); // High Priority first (descending index)
+            return bPri.index.compareTo(aPri.index); // Descending (instant first)
           }
-          return (a.distance ?? 0.0).compareTo(b.distance ?? 0.0);
+          
+          // 2. Sort by Urgent Flag
+          if (a.isUrgent != b.isUrgent) {
+            return a.isUrgent ? -1 : 1; // Urgent (true) comes first
+          }
+          
+          // 3. Sort by Deadline Terdekat
+          if (a.deadline != b.deadline) {
+            if (a.deadline == null) return 1;
+            if (b.deadline == null) return -1;
+            return a.deadline!.compareTo(b.deadline!); // Earliest first
+          }
+          
+          // 4. Sort by Jarak Terdekat
+          return (a.distance ?? 0.0).compareTo(b.distance ?? 0.0); // Shortest first
         });
       } else if (_selectedMode == OptimizationMode.distanceFirst) {
-        // Pure distance (TSP Solver)
         temp.sort((a, b) => (a.distance ?? 0.0).compareTo(b.distance ?? 0.0));
       } else {
-        // Geo Clustering: Group by geographic zones (Zone A vs Zone B)
         temp.sort((a, b) {
           final aCluster = _getGeoCluster(a);
           final bCluster = _getGeoCluster(b);
@@ -146,19 +155,15 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
 
   // Priority classification helper
   _DeliveryPriority _getPriority(OrderModel order) {
-    if (order.orderNumber == 'TRX-105') {
-      return _DeliveryPriority.highInstant; // High (Instant ⚡)
+    switch (order.deliveryType.toLowerCase()) {
+      case 'instant':
+        return _DeliveryPriority.instant;
+      case 'scheduled':
+        return _DeliveryPriority.scheduled;
+      case 'sameday':
+      default:
+        return _DeliveryPriority.sameday;
     }
-    if (order.orderNumber == 'TRX-103') {
-      return _DeliveryPriority.highFrozenFood; // High (Frozen Food ❄️)
-    }
-    if (order.orderNumber == 'TRX-106') {
-      return _DeliveryPriority.highSameDay; // High (Same Day 📅)
-    }
-    if (order.orderNumber == 'TRX-104') {
-      return _DeliveryPriority.normalRegular; // Normal (Regular Delivery 📦)
-    }
-    return _DeliveryPriority.lowNonUrgent; // Low (Non Urgent 🕒)
   }
 
   // Geo Clustering group helper
@@ -578,7 +583,7 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                                   ),
                                 ),
                               ),
-                              if (!isFirst) _buildPriorityBadge(priority!),
+                              if (!isFirst) _buildPriorityBadge(priority!, order!.isUrgent),
                             ],
                           ),
                           const SizedBox(height: 3),
@@ -649,7 +654,7 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
               },
               icon: const Icon(Icons.directions_rounded, color: Colors.white),
               label: const Text(
-                'Terapkan Rute Cerdas',
+                'Mulai Pengantaran',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -739,98 +744,67 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
     );
   }
 
-  Widget _buildPriorityBadge(_DeliveryPriority priority) {
-    String tierText = '';
-    Color tierColor = Colors.grey;
-    
+  Widget _buildPriorityBadge(_DeliveryPriority priority, bool isUrgent) {
     String subText = '';
     Color subColor = Colors.grey;
     IconData subIcon = Icons.info_outline;
 
     switch (priority) {
-      case _DeliveryPriority.highInstant:
-        tierText = 'HIGH PRIORITY';
-        tierColor = const Color(0xFFEF4444); // Glowing Red
-        
-        subText = '⚡ INSTANT';
+      case _DeliveryPriority.instant:
+        subText = '🚀 INSTANT';
         subColor = const Color(0xFFEF4444);
-        subIcon = Icons.bolt;
+        subIcon = Icons.flash_on;
         break;
-      case _DeliveryPriority.highFrozenFood:
-        tierText = 'HIGH PRIORITY';
-        tierColor = const Color(0xFFF59E0B); // Amber
-        
-        subText = '❄️ FROZEN FOOD';
-        subColor = const Color(0xFFF59E0B);
-        subIcon = Icons.ac_unit_rounded;
-        break;
-      case _DeliveryPriority.highSameDay:
-        tierText = 'HIGH PRIORITY';
-        tierColor = const Color(0xFF10B981); // Emerald
-        
-        subText = '📅 SAME DAY';
+      case _DeliveryPriority.sameday:
+        subText = '📦 SAME DAY';
         subColor = const Color(0xFF10B981);
-        subIcon = Icons.calendar_today_rounded;
+        subIcon = Icons.local_shipping;
         break;
-      case _DeliveryPriority.normalRegular:
-        tierText = 'NORMAL';
-        tierColor = const Color(0xFF1976D2); // Blue
-        
-        subText = '📦 REGULAR';
-        subColor = const Color(0xFF1976D2);
-        subIcon = Icons.local_shipping_outlined;
-        break;
-      case _DeliveryPriority.lowNonUrgent:
-        tierText = 'LOW PRIORITY';
-        tierColor = Colors.grey;
-        
-        subText = '🕒 NON URGENT';
-        subColor = Colors.grey;
-        subIcon = Icons.schedule_rounded;
+      case _DeliveryPriority.scheduled:
+        subText = '🗓️ SCHEDULED';
+        subColor = const Color(0xFFF59E0B);
+        subIcon = Icons.calendar_today;
         break;
     }
 
     return Wrap(
       spacing: 6,
       children: [
-        // 1. Tier Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          decoration: BoxDecoration(
-            color: tierColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: tierColor.withValues(alpha: 0.3)),
-          ),
-          child: Text(
-            tierText,
-            style: TextStyle(
-              color: tierColor,
-              fontSize: 7.5,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.2,
+        if (isUrgent)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.warning_amber_rounded, size: 10, color: Colors.red),
+                SizedBox(width: 4),
+                Text('URGENT', style: TextStyle(color: Colors.red, fontSize: 8, fontWeight: FontWeight.bold)),
+              ],
             ),
           ),
-        ),
-        
-        // 2. Subtype Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
           decoration: BoxDecoration(
-            color: subColor.withValues(alpha: 0.15),
+            color: subColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: subColor.withValues(alpha: 0.4)),
+            border: Border.all(color: subColor.withValues(alpha: 0.2)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(subIcon, color: subColor, size: 9),
-              const SizedBox(width: 3),
+              Icon(subIcon, size: 10, color: subColor),
+              const SizedBox(width: 4),
               Text(
                 subText,
                 style: TextStyle(
                   color: subColor,
-                  fontSize: 7.5,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -841,31 +815,32 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
   }
 
   Color _getPriorityColor(_DeliveryPriority priority) {
-    if (priority == _DeliveryPriority.highInstant) return const Color(0xFFEF4444);
-    if (priority == _DeliveryPriority.highFrozenFood) return const Color(0xFFF59E0B);
-    if (priority == _DeliveryPriority.highSameDay) return const Color(0xFF10B981);
-    if (priority == _DeliveryPriority.normalRegular) return const Color(0xFF1976D2);
-    return Colors.grey;
+    switch (priority) {
+      case _DeliveryPriority.instant:
+        return const Color(0xFFEF4444);
+      case _DeliveryPriority.sameday:
+        return const Color(0xFF10B981);
+      case _DeliveryPriority.scheduled:
+        return const Color(0xFFF59E0B);
+    }
   }
 
   String _getDecisionLog() {
     switch (_selectedMode) {
       case OptimizationMode.slaFirst:
-        return 'SLA-First Active: Urutan disusun prioritas SLA tertinggi (Instant -> Frozen -> Same Day) dengan Predictive Dispatch untuk menghindari penalti rute.';
+        return 'SLA-First Active: Urutan disusun prioritas SLA tertinggi (Instant -> Same Day -> Scheduled) dengan filter Urgent flag, Deadline, dan Jarak Terdekat.';
       case OptimizationMode.distanceFirst:
-        return 'Jarak-First Active: Prioritas SLA dikesampingkan. Menggunakan TSP solver murni untuk menghemat rute perjalanan berdasarkan jarak Euclidean terpendek.';
+        return 'Jarak-First Active: Mengabaikan tipe pengiriman, diurutkan berdasarkan matriks TSP Jarak Terdekat untuk meminimalkan konsumsi BBM.';
       case OptimizationMode.geoCluster:
-        return 'Geo-Cluster Active: Klusterisasi wilayah aktif (Mampang-Kemang vs Cilandak-Pasar Minggu). Rute dikelompokkan per zona untuk mengeliminasi perjalanan bolak-balik.';
+        return 'Geo-Cluster Active: Klusterisasi wilayah aktif. Rute dikelompokkan per zona untuk mengeliminasi perjalanan bolak-balik.';
     }
   }
 }
 
 enum _DeliveryPriority {
-  lowNonUrgent,
-  normalRegular,
-  highSameDay,
-  highFrozenFood,
-  highInstant
+  scheduled,
+  sameday,
+  instant
 }
 
 class _MapRoutePainter extends CustomPainter {
@@ -934,14 +909,16 @@ class _MapRoutePainter extends CustomPainter {
       final order = orders[i - 1];
       Color pinColor = Colors.grey;
       
-      if (order.orderNumber == 'TRX-105') {
-        pinColor = const Color(0xFFEF4444); // Red - Instant
-      } else if (order.orderNumber == 'TRX-103') {
-        pinColor = const Color(0xFFF59E0B); // Amber - Frozen Food
-      } else if (order.orderNumber == 'TRX-106') {
-        pinColor = const Color(0xFF10B981); // Emerald - Same Day
-      } else if (order.orderNumber == 'TRX-104') {
-        pinColor = const Color(0xFF1976D2); // Blue - Regular
+      switch (order.deliveryType.toLowerCase()) {
+        case 'instant':
+          pinColor = const Color(0xFFEF4444);
+          break;
+        case 'sameday':
+          pinColor = const Color(0xFF10B981);
+          break;
+        case 'scheduled':
+          pinColor = const Color(0xFFF59E0B);
+          break;
       }
       
       final paintOrderPin = Paint()..color = pinColor;

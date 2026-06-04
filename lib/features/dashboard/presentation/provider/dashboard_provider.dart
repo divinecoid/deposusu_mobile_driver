@@ -45,14 +45,7 @@ class DashboardProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal memuat data dashboard');
       }
     } catch (e) {
-      // MOCK BACKEND DATA FALLBACK
-      _errorMessage = 'Terjadi kesalahan jaringan: $e. Menggunakan data simulasi.';
-      _stats = {
-        'pending_tasks': 2,
-        'active_deliveries': 1,
-        'completed_today': 5,
-      };
-      // Keep existing attendance state if already set
+      _errorMessage = e.toString();
     }
 
     _isLoading = false;
@@ -74,6 +67,7 @@ class DashboardProvider extends ChangeNotifier {
 
       if (response.statusCode == 200 && data['success'] == true) {
         _attendance['checked_in'] = true;
+        _attendance['checked_out'] = false;
         _attendance['check_in_at'] = data['data']['check_in_at'];
         
         _isLoading = false;
@@ -83,14 +77,10 @@ class DashboardProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal check-in');
       }
     } catch (e) {
-      // MOCK CHECK IN FALLBACK
-      _errorMessage = 'Gagal check-in ke server: $e. Mode offline aktif.';
-      _attendance['checked_in'] = true;
-      _attendance['check_in_at'] = DateTime.now().toIso8601String();
-      
+      _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return true;
+      return false;
     }
   }
 
@@ -107,7 +97,8 @@ class DashboardProvider extends ChangeNotifier {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['success'] == true) {
-        _attendance['checked_in'] = false; // Still technically checked in, but checked out for the day
+        _attendance['checked_in'] = true;
+        _attendance['checked_out'] = true;
         _attendance['check_out_at'] = data['data']['check_out_at'];
         
         _isLoading = false;
@@ -117,14 +108,20 @@ class DashboardProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal check-out');
       }
     } catch (e) {
-      // MOCK CHECK OUT FALLBACK
-      _errorMessage = 'Gagal check-out ke server: $e. Mode offline aktif.';
-      _attendance['checked_in'] = false;
-      _attendance['check_out_at'] = DateTime.now().toIso8601String();
-      
+      _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return true;
+      return false;
     }
+  }
+
+  void resetAttendance() {
+    _attendance = {
+      'checked_in': false,
+      'checked_out': false,
+      'check_in_at': null,
+      'check_out_at': null,
+    };
+    notifyListeners();
   }
 }

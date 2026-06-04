@@ -237,27 +237,35 @@ class _DashboardPageState extends State<DashboardPage> {
                         ElevatedButton(
                           onPressed: _handleCheckOut,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
+                            backgroundColor: Colors.redAccent,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          child: const Text('Akhiri Tugas', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: const Text('Selesai Bertugas', style: TextStyle(fontWeight: FontWeight.bold)),
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                           decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.1),
+                            color: Colors.green.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                           ),
-                          child: const Text(
-                            'Tugas Hari Ini Selesai',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle_rounded, size: 20, color: Colors.green[600]),
+                              const SizedBox(width: 8),
+                              Text(
+                                '✓ Hari Kerja Selesai',
+                                style: TextStyle(
+                                  color: Colors.green[700],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                     ],
