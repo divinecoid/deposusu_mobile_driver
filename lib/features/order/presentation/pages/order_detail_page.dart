@@ -907,7 +907,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     }
 
     final isPrepared = order.status == 'prepared';
-    final isOnDelivery = order.status == 'ondelivery';
+    final isOnDelivery = order.status == 'delivering';
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -942,7 +942,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       Text(
                         order.status == 'prepared'
                             ? 'Siap Diambil'
-                            : order.status == 'ondelivery'
+                            : order.status == 'delivering'
                                 ? 'Sedang Dikirim'
                                 : order.status == 'failed_reschedule'
                                     ? 'Reschedule'
@@ -952,7 +952,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         style: TextStyle(
                           color: order.status == 'prepared'
                               ? AppColors.info
-                              : order.status == 'ondelivery'
+                              : order.status == 'delivering'
                                   ? AppColors.warning
                                   : order.status == 'failed_reschedule'
                                       ? Colors.orange
@@ -1003,13 +1003,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   children: [
                     const Icon(Icons.assignment_ind_outlined, color: AppColors.secondary, size: 20),
                     const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('DITUGASKAN OLEH', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontSize: 10, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 2),
-                        Text(order.assignedBy!, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('DITUGASKAN OLEH', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontSize: 10, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 2),
+                          Text(order.assignedBy!, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1190,13 +1192,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           children: [
                             const Icon(Icons.person_rounded, color: AppColors.success, size: 20),
                             const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('DITERIMA OLEH', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600], fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                                const SizedBox(height: 2),
-                                Text(order.receivedBy!, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 15)),
-                              ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('DITERIMA OLEH', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600], fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                                  const SizedBox(height: 2),
+                                  Text(order.receivedBy!, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 15), overflow: TextOverflow.ellipsis),
+                                ],
+                              ),
                             ),
                           ],
                         ),

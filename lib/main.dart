@@ -15,12 +15,16 @@ import 'features/profile/presentation/pages/driver_profile_page.dart';
 import 'features/settings/presentation/pages/driver_settings_page.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize network API client
-  final apiClient = ApiClient();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
+    // Initialize network API client
+    final apiClient = ApiClient();
 
   runApp(
     MultiProvider(
@@ -33,6 +37,7 @@ void main() {
       child: const MyApp(),
     ),
   );
+  });
 }
 
 class MyApp extends StatelessWidget {

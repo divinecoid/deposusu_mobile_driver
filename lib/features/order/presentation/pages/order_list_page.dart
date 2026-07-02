@@ -237,49 +237,56 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
           indicatorColor: AppColors.secondary,
           labelColor: AppColors.secondary,
           unselectedLabelColor: AppColors.textMutedDark,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
           tabs: [
             Tab(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Tugas Baru'),
-                  if (pending.isNotEmpty) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: const BoxDecoration(
-                        color: AppColors.info,
-                        shape: BoxShape.circle,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Tugas Baru'),
+                    if (pending.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: const BoxDecoration(
+                          color: AppColors.info,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${pending.length}',
+                          style: const TextStyle(fontSize: 10, color: Colors.white),
+                        ),
                       ),
-                      child: Text(
-                        '${pending.length}',
-                        style: const TextStyle(fontSize: 10, color: Colors.white),
-                      ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             Tab(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Proses Kirim'),
-                  if (delivering.isNotEmpty) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: const BoxDecoration(
-                        color: AppColors.warning,
-                        shape: BoxShape.circle,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Proses Kirim'),
+                    if (delivering.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: const BoxDecoration(
+                          color: AppColors.warning,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${delivering.length}',
+                          style: const TextStyle(fontSize: 10, color: Colors.white),
+                        ),
                       ),
-                      child: Text(
-                        '${delivering.length}',
-                        style: const TextStyle(fontSize: 10, color: Colors.white),
-                      ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ],
@@ -508,12 +515,15 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
         children: [
           Icon(icon, size: 16, color: iconColor),
           const SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -557,12 +567,15 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                   children: [
                     Row(
                       children: [
-                        Text(
-                          order.orderNumber,
-                          style: const TextStyle(
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                        Flexible(
+                          child: Text(
+                            order.orderNumber,
+                            style: const TextStyle(
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -613,12 +626,15 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                   children: [
                     const Icon(Icons.person_outline, size: 16, color: AppColors.textMutedDark),
                     const SizedBox(width: 8),
-                    Text(
-                      order.customerName,
-                      style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                    Expanded(
+                      child: Text(
+                        order.customerName,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -669,27 +685,30 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Total Tagihan',
-                          style: TextStyle(color: AppColors.textMutedDark, fontSize: 11),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          NumberFormat.currency(
-                            locale: 'id_ID',
-                            symbol: 'Rp ',
-                            decimalDigits: 0,
-                          ).format(order.totalAmount),
-                          style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Total Tagihan',
+                            style: TextStyle(color: AppColors.textMutedDark, fontSize: 11),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 2),
+                          Text(
+                            NumberFormat.currency(
+                              locale: 'id_ID',
+                              symbol: 'Rp ',
+                              decimalDigits: 0,
+                            ).format(order.totalAmount),
+                            style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                     if (!isPending && !provider.verifiedOrderIds.contains(order.id))
                       ElevatedButton.icon(
@@ -748,7 +767,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
         color = AppColors.info;
         label = 'Siap Ambil';
         break;
-      case 'ondelivery':
+      case 'delivering':
         color = AppColors.warning;
         label = 'Dalam Kirim';
         break;

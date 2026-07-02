@@ -770,8 +770,11 @@ class _DashboardPageState extends State<DashboardPage> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: SizedBox(
-                  height: 450,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.6,
+                    minHeight: 300,
+                  ),
                   child: Stack(
                     children: [
                       // Camera simulation view
