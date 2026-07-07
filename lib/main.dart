@@ -9,8 +9,6 @@ import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/order/presentation/provider/order_provider.dart';
 import 'features/order/presentation/pages/order_list_page.dart';
 import 'features/order/presentation/pages/order_history_page.dart';
-import 'features/maps/presentation/pages/maps_navigation_page.dart';
-import 'features/scan/presentation/pages/scan_package_page.dart';
 import 'features/profile/presentation/pages/driver_profile_page.dart';
 import 'features/settings/presentation/pages/driver_settings_page.dart';
 import 'core/theme/app_theme.dart';
@@ -80,22 +78,16 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       ), // 0: Home
       OrderListPage(
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-      ), // 1: Queue Delivery
-      MapsNavigationPage(
-        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-      ), // 2: Maps
-      ScanPackagePage(
-        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-      ), // 3: Scan Package
+      ), // 1: Delivery
       OrderHistoryPage(
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-      ), // 4: History
+      ), // 2: History
       DriverProfilePage(
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-      ), // 5: Profile
+      ), // 3: Profile
       DriverSettingsPage(
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-      ), // 6: Settings
+      ), // 4: Settings
     ];
   }
 
@@ -115,7 +107,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       key: _scaffoldKey,
       body: _pages[_selectedIndex],
       drawer: _buildDrawer(context),
-      bottomNavigationBar: _selectedIndex > 3
+      bottomNavigationBar: _selectedIndex > 1
           ? null
           : BottomNavigationBar(
               currentIndex: _selectedIndex,
@@ -135,16 +127,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   icon: Icon(Icons.local_shipping_outlined),
                   activeIcon: Icon(Icons.local_shipping),
                   label: 'Kirim',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.explore_outlined),
-                  activeIcon: Icon(Icons.explore),
-                  label: 'Navigasi',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.qr_code_scanner_outlined),
-                  activeIcon: Icon(Icons.qr_code_scanner),
-                  label: 'Scan',
                 ),
               ],
             ),
@@ -205,11 +187,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 children: [
                   _buildDrawerTile(0, 'Beranda', Icons.dashboard_rounded),
                   _buildDrawerTile(1, 'Antrean Pengiriman', Icons.local_shipping_rounded),
-                  _buildDrawerTile(2, 'Navigasi', Icons.near_me_rounded),
-                  _buildDrawerTile(3, 'Scan Paket', Icons.qr_code_scanner_rounded),
-                  _buildDrawerTile(4, 'Riwayat Pengiriman', Icons.history_rounded),
-                  _buildDrawerTile(5, 'Profil', Icons.person_rounded),
-                  _buildDrawerTile(6, 'Pengaturan', Icons.settings_rounded),
+                  _buildDrawerTile(2, 'Riwayat Pengiriman', Icons.history_rounded),
+                  _buildDrawerTile(3, 'Profil', Icons.person_rounded),
+                  _buildDrawerTile(4, 'Pengaturan', Icons.settings_rounded),
                 ],
               ),
             ),

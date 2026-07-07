@@ -25,59 +25,6 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  void _handleCheckIn() async {
-    final shift = 'Full Day';
-    final success = await context.read<DashboardProvider>().checkIn(
-      latitude: -6.2088, // Placeholder GPS coordinate (Jakarta)
-      longitude: 106.8456,
-      shift: shift,
-    );
-
-    if (mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Check-In berhasil! Selamat bekerja.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        final error = context.read<DashboardProvider>().errorMessage;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Gagal Check-In.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _handleCheckOut() async {
-    final success = await context.read<DashboardProvider>().checkOut(
-      latitude: -6.2088,
-      longitude: 106.8456,
-    );
-
-    if (mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Check-Out berhasil! Terima kasih untuk kerja keras Anda hari ini.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        final error = context.read<DashboardProvider>().errorMessage;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Gagal Check-Out.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,6 +167,23 @@ class _DashboardPageState extends State<DashboardPage> {
                               letterSpacing: 1.1,
                             ),
                           ),
+                          const Spacer(),
+                          // Info badge otomatis
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0284C7).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Otomatis',
+                              style: TextStyle(
+                                color: Color(0xFF0284C7),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -234,47 +198,44 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      if (isLoading)
-                        Center(child: CircularProgressIndicator(color: colorScheme.primary))
-                      else if (!attendance['checked_in'])
-                        ElevatedButton(
-                          onPressed: _handleCheckIn,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Mulai Bertugas', style: TextStyle(fontWeight: FontWeight.bold)),
-                        )
-                      else if (attendance['checked_in'] && !attendance['checked_out'])
-                        ElevatedButton(
-                          onPressed: _handleCheckOut,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Akhiri Tugas', style: TextStyle(fontWeight: FontWeight.bold)),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            'Tugas Hari Ini Selesai',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                      const SizedBox(height: 16),
+                      // Info pesan otomatis
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: attendance['checked_in'] == true
+                              ? const Color(0xFF10B981).withOpacity(0.06)
+                              : const Color(0xFF0284C7).withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
                         ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              attendance['checked_in'] == true
+                                  ? Icons.check_circle_outline_rounded
+                                  : Icons.info_outline_rounded,
+                              size: 16,
+                              color: attendance['checked_in'] == true
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF0284C7),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                attendance['checked_in'] == true
+                                    ? 'Absensi tercatat otomatis saat ambil orderan pertama.'
+                                    : 'Absensi akan tercatat otomatis saat Anda mengambil orderan pertama hari ini.',
+                                style: TextStyle(
+                                  color: attendance['checked_in'] == true
+                                      ? const Color(0xFF059669)
+                                      : const Color(0xFF0284C7),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

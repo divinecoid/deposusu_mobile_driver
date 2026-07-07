@@ -8,6 +8,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/watermark_util.dart';
 import '../provider/order_provider.dart';
 import '../../data/models/order_model.dart';
+import '../../../dashboard/presentation/provider/dashboard_provider.dart';
 
 class OrderDetailPage extends StatefulWidget {
   final int orderId;
@@ -89,6 +90,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Future<void> _pickup() async {
     final success = await context.read<OrderProvider>().pickupOrder(widget.orderId);
     if (success) {
+      // Auto check-in sudah diproses backend — refresh dashboard untuk update waktu
+      if (mounted) {
+        context.read<DashboardProvider>().fetchDashboardData();
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
