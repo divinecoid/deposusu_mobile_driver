@@ -45,14 +45,7 @@ class DashboardProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal memuat data dashboard');
       }
     } catch (e) {
-      // MOCK BACKEND DATA FALLBACK
-      _errorMessage = 'Terjadi kesalahan jaringan: $e. Menggunakan data simulasi.';
-      _stats = {
-        'pending_tasks': 2,
-        'active_deliveries': 1,
-        'completed_today': 5,
-      };
-      // Keep existing attendance state if already set
+      _errorMessage = e.toString();
     }
 
     _isLoading = false;
@@ -83,14 +76,10 @@ class DashboardProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal check-in');
       }
     } catch (e) {
-      // MOCK CHECK IN FALLBACK
-      _errorMessage = 'Gagal check-in ke server: $e. Mode offline aktif.';
-      _attendance['checked_in'] = true;
-      _attendance['check_in_at'] = DateTime.now().toIso8601String();
-      
+      _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return true;
+      return false;
     }
   }
 
@@ -117,14 +106,10 @@ class DashboardProvider extends ChangeNotifier {
         throw Exception(data['message'] ?? 'Gagal check-out');
       }
     } catch (e) {
-      // MOCK CHECK OUT FALLBACK
-      _errorMessage = 'Gagal check-out ke server: $e. Mode offline aktif.';
-      _attendance['checked_in'] = false;
-      _attendance['check_out_at'] = DateTime.now().toIso8601String();
-      
+      _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      return true;
+      return false;
     }
   }
 }

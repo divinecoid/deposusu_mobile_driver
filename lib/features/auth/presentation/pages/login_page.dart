@@ -5,7 +5,7 @@ import '../../../../main.dart'; // To access MainNavigationPage
 import '../provider/auth_provider.dart';
 
 // Demo credentials for testing
-const String _demoEmail = 'driver@deposusu.com';
+const String _demoEmail = 'driver1@deposusu.com';
 const String _demoPassword = 'password';
 
 class LoginPage extends StatefulWidget {
@@ -42,9 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainNavigationPage()),
-      );
+      // MaterialApp home will reactively transition to MainNavigationPage
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
