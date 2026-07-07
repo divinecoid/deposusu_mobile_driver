@@ -42,14 +42,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final themeProvider = context.watch<ThemeProvider>();
 
     return MaterialApp(
       title: 'Deposusu Kurir',
       debugShowCheckedModeBanner: false,
-      themeMode: themeProvider.themeMode,
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
       home: authProvider.isAuthenticated
           ? const MainNavigationPage()
           : const LoginPage(),
