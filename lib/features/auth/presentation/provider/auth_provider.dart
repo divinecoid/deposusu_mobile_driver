@@ -15,6 +15,9 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider(this.apiClient) {
     _tryAutoLogin();
+    apiClient.onUnauthorized = () {
+      logout();
+    };
   }
 
   bool get isLoading => _isLoading;

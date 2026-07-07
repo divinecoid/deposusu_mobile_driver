@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../constants/app_constants.dart';
@@ -7,6 +8,7 @@ import '../constants/app_constants.dart';
 class ApiClient {
   final http.Client _client;
   String? _token;
+  VoidCallback? onUnauthorized;
 
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
@@ -24,18 +26,29 @@ class ApiClient {
         if (_token != null) 'Authorization': 'Bearer $_token',
       };
 
+  void _handleResponse(String endpoint, int statusCode) {
+    if (statusCode == 401 && endpoint != '/login' && endpoint != '/driver/verify-otp') {
+      clearToken();
+      onUnauthorized?.call();
+    }
+  }
+
   Future<http.Response> get(String endpoint, {Map<String, String>? queryParams}) async {
     final uri = Uri.parse('${AppConstants.baseUrl}$endpoint').replace(queryParameters: queryParams);
-    return await _client.get(uri, headers: _headers);
+    final response = await _client.get(uri, headers: _headers);
+    _handleResponse(endpoint, response.statusCode);
+    return response;
   }
 
   Future<http.Response> post(String endpoint, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
-    return await _client.post(
+    final response = await _client.post(
       uri,
       headers: _headers,
       body: body != null ? jsonEncode(body) : null,
     );
+    _handleResponse(endpoint, response.statusCode);
+    return response;
   }
 
   /// Sends a multipart POST request (used for uploading proof photo)
@@ -68,6 +81,8 @@ class ApiClient {
     );
     request.files.add(multipartFile);
 
-    return await request.send();
+    final response = await request.send();
+    _handleResponse(endpoint, response.statusCode);
+    return response;
   }
 }
