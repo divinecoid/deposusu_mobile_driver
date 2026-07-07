@@ -67,6 +67,7 @@ class DashboardProvider extends ChangeNotifier {
 
       if (response.statusCode == 200 && data['success'] == true) {
         _attendance['checked_in'] = true;
+        _attendance['checked_out'] = false;
         _attendance['check_in_at'] = data['data']['check_in_at'];
         
         _isLoading = false;
@@ -96,7 +97,8 @@ class DashboardProvider extends ChangeNotifier {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['success'] == true) {
-        _attendance['checked_in'] = false; // Still technically checked in, but checked out for the day
+        _attendance['checked_in'] = true;
+        _attendance['checked_out'] = true;
         _attendance['check_out_at'] = data['data']['check_out_at'];
         
         _isLoading = false;
@@ -111,5 +113,15 @@ class DashboardProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  void resetAttendance() {
+    _attendance = {
+      'checked_in': false,
+      'checked_out': false,
+      'check_in_at': null,
+      'check_out_at': null,
+    };
+    notifyListeners();
   }
 }
