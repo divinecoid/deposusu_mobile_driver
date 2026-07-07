@@ -5,8 +5,8 @@ import '../../../../main.dart'; // To access MainNavigationPage
 import '../provider/auth_provider.dart';
 
 // Demo credentials for testing
-const String _demoEmail = 'driver1@deposusu.com';
-const String _demoPassword = 'password';
+const String _demoEmail = 'driver@deposusu.com';
+const String _demoPassword = 'password123';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

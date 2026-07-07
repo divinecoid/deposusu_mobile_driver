@@ -173,9 +173,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   style: TextStyle(color: Color(0xFF64748B)),
                 ),
                 const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.file(_image!, height: 180, width: double.infinity, fit: BoxFit.cover),
+                SizedBox(
+                  width: double.maxFinite,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.file(_image!, height: 180, fit: BoxFit.cover),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 // Field Diterima Oleh
@@ -778,8 +781,86 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
       ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+          ),
+          child: isLoading
+              ? const Center(
+                  heightFactor: 1.5,
+                  child: CircularProgressIndicator(color: Color(0xFF0284C7)),
+                )
+              : isPrepared
+                  ? ElevatedButton.icon(
+                      onPressed: _pickup,
+                      icon: const Icon(Icons.takeout_dining, color: Colors.white),
+                      label: const Text(
+                        'Ambil Tugas & Mulai Kirim',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0284C7),
+                        minimumSize: const Size(double.infinity, 52),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                    )
+                  : isOnDelivery
+                      ? Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: OutlinedButton.icon(
+                                onPressed: _showFailedDeliveryDialog,
+                                icon: const Icon(Icons.cancel_presentation_rounded, color: Colors.redAccent, size: 18),
+                                label: const Text('Gagal Kirim',
+                                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13)),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                                  minimumSize: const Size(0, 52),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 3,
+                              child: !order.paymentStatus.toUpperCase().contains('PAID') && _qrisPaymentProof == null
+                                  ? ElevatedButton.icon(
+                                      onPressed: () => _showQrisModal(order),
+                                      icon: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 18),
+                                      label: const Text('Tunjukkan QRIS',
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF0284C7),
+                                        minimumSize: const Size(0, 52),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                        elevation: 0,
+                                      ),
+                                    )
+                                  : ElevatedButton.icon(
+                                      onPressed: () => _capturePhotoAndFinish(order),
+                                      icon: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                                      label: const Text('Serahkan & Selesai',
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.success,
+                                        minimumSize: const Size(0, 52),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                        elevation: 0,
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+        ),
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -1198,72 +1279,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               ),
             ],
 
-            // Action Buttons based on state
-            if (isLoading)
-              const Center(child: CircularProgressIndicator(color: Color(0xFF0284C7)))
-            else if (isPrepared)
-              ElevatedButton(
-                onPressed: _pickup,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0284C7),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.takeout_dining),
-                    SizedBox(width: 8),
-                    Text('Ambil Tugas & Mulai Kirim', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  ],
-                ),
-              )
-            else if (isOnDelivery)
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _showFailedDeliveryDialog,
-                      icon: const Icon(Icons.cancel_presentation_rounded, color: Colors.redAccent, size: 18),
-                      label: const Text('Gagal Kirim', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.redAccent, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: !order.paymentStatus.toUpperCase().contains('PAID')
-                        ? ElevatedButton.icon(
-                            onPressed: () => _showQrisModal(order),
-                            icon: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 18),
-                            label: const Text('Tunjukkan QRIS Bayar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0284C7),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              elevation: 0,
-                            ),
-                          )
-                        : ElevatedButton.icon(
-                            onPressed: () => _capturePhotoAndFinish(order),
-                            icon: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
-                            label: const Text('Serahkan Barang & Selesai', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.success,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              elevation: 0,
-                            ),
-                          ),
-                  ),
-                ],
-              )
           ],
         ),
       ),

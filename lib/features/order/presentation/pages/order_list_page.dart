@@ -23,7 +23,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refresh();
     });
@@ -43,6 +43,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     await Future.wait([
       provider.fetchPendingOrders(),
       provider.fetchDeliveringOrders(),
+      provider.fetchCompletedOrders(),
     ]);
   }
 
@@ -156,6 +157,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     final orderProvider = context.watch<OrderProvider>();
     final pending = orderProvider.pendingOrders;
     final delivering = orderProvider.deliveringOrders;
+    final completed = orderProvider.completedOrders;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -223,6 +225,28 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                 ],
               ),
             ),
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Terkirim'),
+                  if (completed.isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${completed.length}',
+                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -238,6 +262,11 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
             onRefresh: _refresh,
             color: const Color(0xFF0284C7),
             child: _buildList(delivering, isPending: false),
+          ),
+          RefreshIndicator(
+            onRefresh: _refresh,
+            color: const Color(0xFF10B981),
+            child: _buildCompletedList(completed),
           ),
         ],
       ),
@@ -583,6 +612,171 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                 )
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompletedList(List<OrderModel> list) {
+    if (list.isEmpty) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+          const Icon(Icons.check_circle_outline_rounded, size: 80, color: Color(0xFFCBD5E1)),
+          const SizedBox(height: 16),
+          const Text(
+            'Belum ada pengiriman selesai',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF64748B), fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Kiriman yang berhasil diselesaikan akan muncul di sini.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+          ),
+        ],
+      );
+    }
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      itemCount: list.length,
+      itemBuilder: (context, index) => _buildCompletedCard(list[index]),
+    );
+  }
+
+  Widget _buildCompletedCard(OrderModel order) {
+    int totalItems = order.items.fold(0, (sum, item) => sum + item.quantity);
+    final isFailed = order.status == 'failed_returned' || order.status == 'failed_reschedule';
+    final cardAccent = isFailed ? const Color(0xFFEF4444) : const Color(0xFF10B981);
+    final cardBg = isFailed ? const Color(0xFFFFF1F2) : const Color(0xFFF0FDF4);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cardAccent.withOpacity(0.25)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => OrderDetailPage(orderId: order.id)),
+            );
+          },
+          child: Column(
+            children: [
+              // Header strip
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isFailed ? Icons.cancel_rounded : Icons.check_circle_rounded,
+                      color: cardAccent,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      order.orderNumber,
+                      style: TextStyle(
+                        color: cardAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const Spacer(),
+                    _buildBadge(order.status),
+                  ],
+                ),
+              ),
+              // Body
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.person_outline, size: 15, color: Color(0xFF64748B)),
+                        const SizedBox(width: 8),
+                        Text(
+                          order.customerName,
+                          style: const TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.location_on_outlined, size: 15, color: Color(0xFF64748B)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            order.customerAddress.isEmpty ? 'Alamat tidak diset' : order.customerAddress,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.inventory_2_outlined, size: 14, color: Color(0xFF94A3B8)),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$totalItems Paket',
+                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          NumberFormat.currency(
+                            locale: 'id_ID',
+                            symbol: 'Rp ',
+                            decimalDigits: 0,
+                          ).format(order.totalAmount),
+                          style: TextStyle(
+                            color: cardAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

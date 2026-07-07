@@ -80,15 +80,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       ), // 0: Home
       OrderListPage(
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-        onNavigateTab: _onItemTapped,
       ), // 1: Queue Delivery
       MapsNavigationPage(
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-        onNavigateTab: _onItemTapped,
       ), // 2: Maps
       ScanPackagePage(
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-        onNavigateTab: _onItemTapped,
       ), // 3: Scan Package
       OrderHistoryPage(
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
@@ -103,60 +100,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   }
 
   void _onItemTapped(int index) {
-    if (index == 2 || index == 3) {
-      final orderProvider = context.read<OrderProvider>();
-      final delivering = orderProvider.deliveringOrders;
-      final verified = orderProvider.verifiedOrderIds;
-
-      if (index == 2) { // Navigasi tab
-        if (delivering.isEmpty) {
-          _showWarningSnackBar('Tidak ada tugas aktif. Silakan terima tugas terlebih dahulu!');
-          return;
-        }
-        final allScanned = delivering.every((o) => verified.contains(o.id));
-        if (!allScanned) {
-          _showWarningSnackBar('Silakan scan semua paket terlebih dahulu!');
-          setState(() {
-            _selectedIndex = 3; // Redirect to Scan tab
-          });
-          return;
-        }
-      } else if (index == 3) { // Scan tab
-        if (delivering.isEmpty) {
-          _showWarningSnackBar('Tidak ada paket aktif untuk discan. Silakan terima tugas terlebih dahulu!');
-          return;
-        }
-      }
-    }
-
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  void _showWarningSnackBar(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.amber[800],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
