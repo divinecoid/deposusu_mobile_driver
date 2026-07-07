@@ -67,23 +67,21 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
       _currentRoute = List.from(delivering);
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: isDark ? AppColors.bgDark : Colors.grey[100],
+      backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: widget.onOpenDrawer != null
             ? IconButton(
-                icon: Icon(Icons.menu_rounded, color: isDark ? Colors.white : Colors.black87),
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A)),
                 onPressed: widget.onOpenDrawer,
               )
             : null,
-        title: Text(
+        title: const Text(
           'Peta Navigasi Cerdas',
           style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
+            color: Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -92,7 +90,7 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
           IconButton(
             icon: Icon(
               _isGpsActive ? Icons.gps_fixed : Icons.gps_off,
-              color: _isGpsActive ? AppColors.success : Colors.grey,
+              color: _isGpsActive ? const Color(0xFF10B981) : Colors.grey,
             ),
             onPressed: () {
               setState(() {
@@ -101,7 +99,7 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(_isGpsActive ? 'Koneksi GPS Aktif (Akurasi Tinggi)' : 'GPS Dinonaktifkan'),
-                  backgroundColor: _isGpsActive ? AppColors.success : Colors.grey,
+                  backgroundColor: _isGpsActive ? const Color(0xFF10B981) : Colors.grey,
                   duration: const Duration(seconds: 1),
                 ),
               );
@@ -115,7 +113,7 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
           Positioned.fill(
             child: _currentRoute.isEmpty
                 ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator(color: Color(0xFF0284C7)),
                   )
                 : InteractiveViewer(
                     maxScale: 3.0,
@@ -124,7 +122,7 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                       painter: _NeonNavigationMapPainter(
                         orders: _currentRoute,
                         gpsPulse: _gpsPulseValue,
-                        isDark: isDark,
+                        isDark: false,
                       ),
                       size: Size.infinite,
                     ),
@@ -139,11 +137,11 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.cardDark.withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.9),
+                color: Colors.white.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))
                 ],
               ),
               child: Row(
@@ -155,33 +153,33 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                         width: 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: _isGpsActive ? AppColors.success : Colors.red,
+                          color: _isGpsActive ? const Color(0xFF10B981) : Colors.red,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         _isGpsActive ? 'Akurasi GPS: 3m' : 'GPS Offline',
-                        style: TextStyle(
-                          color: isDark ? AppColors.textDark : AppColors.textLight,
+                        style: const TextStyle(
+                          color: Color(0xFF0F172A),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                  Text(
-                    'Speed: ${_vehicleSpeed.toStringAsFixed(0)} KM/H',
-                    style: const TextStyle(
-                      color: AppColors.secondary,
+                  const Text(
+                    'Speed: 38 KM/H',
+                    style: TextStyle(
+                      color: Color(0xFF0284C7),
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  Text(
+                  const Text(
                     'Satelit: 18 Active',
                     style: TextStyle(
-                      color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                      color: Color(0xFF64748B),
                       fontSize: 11,
                     ),
                   ),
@@ -204,11 +202,14 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFE0F2FE), Color(0xFFEFF6FF)],
+                    ),
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFBAE6FD)),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.4),
+                        color: const Color(0xFF0284C7).withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       )
@@ -219,18 +220,18 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.explore_outlined, color: Colors.white, size: 20),
+                          Icon(Icons.explore_outlined, color: Color(0xFF0284C7), size: 20),
                           SizedBox(width: 10),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Multi-System Routing Engine',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13),
                               ),
                               Text(
                                 'Geo-Cluster & SLA Monitoring Aktif',
-                                style: TextStyle(color: Colors.white70, fontSize: 10),
+                                style: TextStyle(color: Color(0xFF64748B), fontSize: 10),
                               ),
                             ],
                           ),
@@ -242,7 +243,7 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Tidak ada paket aktif untuk dioptimasi.'),
-                                backgroundColor: AppColors.warning,
+                                backgroundColor: Color(0xFFF59E0B),
                               ),
                             );
                             return;
@@ -261,8 +262,8 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary,
+                          backgroundColor: const Color(0xFF0284C7),
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           elevation: 0,
@@ -283,11 +284,11 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.cardDark : Colors.white,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, -2))
                     ],
                   ),
                   child: Column(
@@ -296,10 +297,10 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             'URUTAN ALAMAT PENGANTARAN',
                             style: TextStyle(
-                              color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                              color: Color(0xFF475569),
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.1,
@@ -308,12 +309,12 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: AppColors.success.withValues(alpha: 0.15),
+                              color: const Color(0xFFD1FAE5),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
                               'Optimized Route',
-                              style: TextStyle(color: AppColors.success, fontSize: 9, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: Color(0xFF059669), fontSize: 9, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -330,7 +331,7 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                                   final isStart = index == 0;
                                   final order = isStart ? null : _currentRoute[index - 1];
                                   final color = isStart 
-                                      ? AppColors.primary 
+                                      ? const Color(0xFF0284C7) 
                                       : _getPriorityColor(order!.orderNumber);
 
                                   return Row(
@@ -338,9 +339,9 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                         decoration: BoxDecoration(
-                                          color: color.withValues(alpha: 0.1),
+                                          color: color.withOpacity(0.08),
                                           borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: color.withValues(alpha: 0.3)),
+                                          border: Border.all(color: color.withOpacity(0.2)),
                                         ),
                                         child: Row(
                                           children: [
@@ -364,7 +365,7 @@ class _MapsNavigationPageState extends State<MapsNavigationPage> {
                                       if (index < _currentRoute.length)
                                         const Padding(
                                           padding: EdgeInsets.symmetric(horizontal: 6),
-                                          child: Icon(Icons.arrow_forward_ios_rounded, color: Colors.white24, size: 12),
+                                          child: Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF94A3B8), size: 12),
                                         ),
                                     ],
                                   );
@@ -460,13 +461,13 @@ class _NeonNavigationMapPainter extends CustomPainter {
 
     // Connect rute paths
     final routePaint = Paint()
-      ..color = AppColors.primary
+      ..color = const Color(0xFF0284C7)
       ..strokeWidth = 3.5
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
     final routeGlowPaint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.18)
+      ..color = const Color(0xFF0284C7).withOpacity(0.18)
       ..strokeWidth = 9.0
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
@@ -485,7 +486,7 @@ class _NeonNavigationMapPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Draw Warehouse Node
-    canvas.drawCircle(warehousePoint, 7.0, Paint()..color = AppColors.primary);
+    canvas.drawCircle(warehousePoint, 7.0, Paint()..color = const Color(0xFF0284C7));
     canvas.drawCircle(warehousePoint, 7.0, pinStrokePaint);
 
     // Draw Courier Node with pulsing radius

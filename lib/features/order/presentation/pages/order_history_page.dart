@@ -30,40 +30,39 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     final orderProvider = context.watch<OrderProvider>();
     final completed = orderProvider.completedOrders;
     final isLoading = orderProvider.isLoading;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: widget.onOpenDrawer != null
             ? IconButton(
-                icon: Icon(Icons.menu_rounded, color: isDark ? Colors.white : Colors.black87),
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A)),
                 onPressed: widget.onOpenDrawer,
               )
             : null,
-        title: Text(
+        title: const Text(
           'Histori Pengiriman',
-          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.w800),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: () => orderProvider.fetchCompletedOrders(),
-        color: AppColors.primary,
+        color: const Color(0xFF0284C7),
         child: isLoading && completed.isEmpty
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF0284C7)))
             : completed.isEmpty
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
                       SizedBox(height: MediaQuery.of(context).size.height * 0.25),
-                      const Icon(Icons.history_toggle_off, size: 80, color: Colors.white10),
+                      const Icon(Icons.history_toggle_off, size: 80, color: Color(0xFFCBD5E1)),
                       const SizedBox(height: 16),
-                      Text(
+                      const Text(
                         'Belum ada pengiriman yang diselesaikan',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600], fontSize: 16),
+                        style: TextStyle(color: Color(0xFF64748B), fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                     ],
                   )
@@ -88,9 +87,16 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.black12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -113,7 +119,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                     Text(
                       order.orderNumber,
                       style: const TextStyle(
-                        color: AppColors.secondary,
+                        color: Color(0xFF0284C7),
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -121,13 +127,13 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.1),
+                        color: const Color(0xFFD1FAE5),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                        border: Border.all(color: const Color(0xFF6EE7B7)),
                       ),
                       child: const Text(
                         'SELESAI',
-                        style: TextStyle(color: AppColors.success, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Color(0xFF059669), fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -135,12 +141,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.person_outline, size: 16, color: AppColors.textMutedDark),
+                    const Icon(Icons.person_outline, size: 16, color: Color(0xFF64748B)),
                     const SizedBox(width: 8),
                     Text(
                       order.customerName,
-                      style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                      style: const TextStyle(
+                        color: Color(0xFF0F172A),
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -150,19 +156,18 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.textMutedDark),
+                    const Icon(Icons.calendar_today_outlined, size: 16, color: Color(0xFF64748B)),
                     const SizedBox(width: 8),
                     Text(
                       'Selesai: $formattedDate',
-                      style: TextStyle(
-                        color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600],
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
                         fontSize: 13,
                       ),
                     ),
                   ],
                 ),
                 if (order.deliveryProofPhoto != null && order.deliveryProofPhoto!.isNotEmpty) ...[
-                  const SizedBox(height: 12),
                   const SizedBox(height: 12),
                   GestureDetector(
                     onTap: () {
@@ -188,7 +193,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => const SizedBox(
                               height: 120,
-                              child: Center(child: Icon(Icons.broken_image, color: Colors.white24, size: 30)),
+                              child: Center(child: Icon(Icons.broken_image, color: Color(0xFFCBD5E1), size: 30)),
                             ),
                           )
                         : Image.file(
@@ -198,22 +203,22 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => const SizedBox(
                               height: 120,
-                              child: Center(child: Icon(Icons.broken_image, color: Colors.white24, size: 30)),
+                              child: Center(child: Icon(Icons.broken_image, color: Color(0xFFCBD5E1), size: 30)),
                             ),
                           ),
                     ),
                   ),
                 ],
-                Divider(height: 24, color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.black12),
+                const Divider(height: 24, color: Color(0xFFE2E8F0)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Total Nilai Barang',
-                          style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600], fontSize: 11),
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -222,22 +227,22 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                             symbol: 'Rp ',
                             decimalDigits: 0,
                           ).format(order.totalAmount),
-                          style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                          style: const TextStyle(
+                            color: Color(0xFF0F172A),
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
                         ),
                       ],
                     ),
-                    Row(
+                    const Row(
                       children: [
                         Text(
                           'Detail',
-                          style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.chevron_right, color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600], size: 16),
+                        SizedBox(width: 4),
+                        Icon(Icons.chevron_right, color: Color(0xFF64748B), size: 16),
                       ],
                     )
                   ],

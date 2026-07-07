@@ -54,8 +54,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
       builder: (context) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.75,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+          decoration: const BoxDecoration(
+            color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -65,18 +65,18 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                 height: 4,
                 width: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white24,
+                  color: const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const Text(
                 'Scan Barcode Resi',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Arahkan kamera ke barcode resi pada paket',
-                style: TextStyle(color: AppColors.textMutedDark, fontSize: 14),
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
               ),
               const SizedBox(height: 40),
               // Scanner box mockup
@@ -84,7 +84,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                 width: 280,
                 height: 280,
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.primary, width: 2),
+                  border: Border.all(color: const Color(0xFF0284C7), width: 2),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Stack(
@@ -93,11 +93,11 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                       child: Container(
                         height: 2,
                         width: 240,
-                        color: Colors.red.withValues(alpha: 0.5),
+                        color: Colors.red.withOpacity(0.5),
                       ),
                     ),
                     const Center(
-                      child: Icon(Icons.qr_code_scanner, size: 80, color: Colors.white24),
+                      child: Icon(Icons.qr_code_scanner, size: 80, color: Color(0xFFCBD5E1)),
                     ),
                   ],
                 ),
@@ -134,11 +134,12 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: const Color(0xFF0284C7),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     minimumSize: const Size(double.infinity, 50),
+                    elevation: 0,
                   ),
                   child: const Text('Simulasi: Scan Sukses', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
@@ -157,25 +158,26 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     final delivering = orderProvider.deliveringOrders;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: widget.onOpenDrawer != null
             ? IconButton(
-                icon: Icon(Icons.menu_rounded, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A)),
                 onPressed: widget.onOpenDrawer,
               )
             : null,
-        title: Text(
+        title: const Text(
           'Daftar Pengiriman',
-          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.w800),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.secondary,
-          labelColor: AppColors.secondary,
-          unselectedLabelColor: AppColors.textMutedDark,
+          indicatorColor: const Color(0xFF0284C7),
+          labelColor: const Color(0xFF0284C7),
+          unselectedLabelColor: const Color(0xFF64748B),
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           tabs: [
             Tab(
               child: Row(
@@ -185,14 +187,14 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                   if (pending.isNotEmpty) ...[
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
-                        color: AppColors.info,
+                        color: Color(0xFF0284C7),
                         shape: BoxShape.circle,
                       ),
                       child: Text(
                         '${pending.length}',
-                        style: const TextStyle(fontSize: 10, color: Colors.white),
+                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -207,14 +209,14 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                   if (delivering.isNotEmpty) ...[
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
-                        color: AppColors.warning,
+                        color: Color(0xFFF59E0B),
                         shape: BoxShape.circle,
                       ),
                       child: Text(
                         '${delivering.length}',
-                        style: const TextStyle(fontSize: 10, color: Colors.white),
+                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -229,21 +231,22 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
         children: [
           RefreshIndicator(
             onRefresh: _refresh,
-            color: AppColors.primary,
+            color: const Color(0xFF0284C7),
             child: _buildList(pending, isPending: true),
           ),
           RefreshIndicator(
             onRefresh: _refresh,
-            color: AppColors.primary,
+            color: const Color(0xFF0284C7),
             child: _buildList(delivering, isPending: false),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showScannerMockup,
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color(0xFF0284C7),
         icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
         label: const Text('Scan Order', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        elevation: 2,
       ),
     );
   }
@@ -256,12 +259,12 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           SizedBox(height: MediaQuery.of(context).size.height * 0.25),
-          const Icon(Icons.delivery_dining_outlined, size: 80, color: Colors.white10),
+          const Icon(Icons.delivery_dining_outlined, size: 80, color: Color(0xFFCBD5E1)),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'Tidak ada tugas saat ini',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600], fontSize: 16),
+            style: TextStyle(color: Color(0xFF64748B), fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ],
       );
@@ -292,19 +295,23 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
       decoration: BoxDecoration(
         gradient: hasOptimized
             ? const LinearGradient(
-                colors: [Color(0xFF10B981), Color(0xFF047857)],
+                colors: [Color(0xFFD1FAE5), Color(0xFFECFDF5)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
+                colors: [Color(0xFFE0F2FE), Color(0xFFEFF6FF)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: hasOptimized ? const Color(0xFF6EE7B7) : const Color(0xFFBAE6FD),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: (hasOptimized ? const Color(0xFF10B981) : AppColors.primary).withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.015),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -318,12 +325,12 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: hasOptimized ? const Color(0xFF10B981).withOpacity(0.15) : const Color(0xFF0284C7).withOpacity(0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   hasOptimized ? Icons.check_circle_rounded : Icons.explore_rounded, 
-                  color: Colors.white, 
+                  color: hasOptimized ? const Color(0xFF047857) : const Color(0xFF0284C7), 
                   size: 24,
                 ),
               ),
@@ -334,8 +341,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                   children: [
                     Text(
                       hasOptimized ? 'Rute Pengiriman Optimal Aktif' : 'Optimasi Jalur Pengiriman (TSP)',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: hasOptimized ? const Color(0xFF065F46) : const Color(0xFF0F172A),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -345,9 +352,10 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                       hasOptimized 
                           ? 'Alamat diurutkan berdasarkan titik terdekat.'
                           : 'Urutkan alamat kurir agar hemat waktu & BBM.',
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: hasOptimized ? const Color(0xFF047857) : const Color(0xFF64748B),
                         fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -371,8 +379,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: hasOptimized ? const Color(0xFF047857) : AppColors.primary,
+              backgroundColor: hasOptimized ? const Color(0xFF10B981) : const Color(0xFF0284C7),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(vertical: 12),
               elevation: 0,
@@ -380,7 +388,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(hasOptimized ? Icons.insights_rounded : Icons.insights_rounded, size: 18),
+                const Icon(Icons.insights_rounded, size: 18),
                 const SizedBox(width: 8),
                 Text(
                   hasOptimized ? 'Lihat/Hitung Ulang Rute' : 'Mulai Optimasi Rute (TSP)',
@@ -402,10 +410,10 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
           const SizedBox(width: 4),
           Text(
             text,
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+            style: const TextStyle(
+              color: Color(0xFF0F172A),
               fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -419,9 +427,16 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.black12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -433,11 +448,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
               MaterialPageRoute(builder: (_) => OrderDetailPage(orderId: order.id)),
             );
             if (result == 'picked_up') {
-              // Provider already updated its lists via pickupOrder().
-              // Just switch to the "Proses Kirim" tab — no refresh needed.
               _tabController.animateTo(1);
             } else {
-              // Only refresh if we didn't just do a pickup (avoids race condition)
               _refresh();
             }
           },
@@ -452,7 +464,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                     Text(
                       order.orderNumber,
                       style: const TextStyle(
-                        color: AppColors.secondary,
+                        color: Color(0xFF0284C7),
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -463,12 +475,12 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.person_outline, size: 16, color: AppColors.textMutedDark),
+                    const Icon(Icons.person_outline, size: 16, color: Color(0xFF64748B)),
                     const SizedBox(width: 8),
                     Text(
                       order.customerName,
-                      style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                      style: const TextStyle(
+                        color: Color(0xFF0F172A),
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -479,15 +491,15 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textMutedDark),
+                    const Icon(Icons.location_on_outlined, size: 16, color: Color(0xFF64748B)),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         order.customerAddress.isEmpty ? 'Alamat tidak diset' : order.customerAddress,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600],
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
                           fontSize: 13,
                         ),
                       ),
@@ -501,7 +513,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                       context,
                       Icons.social_distance_outlined,
                       order.distance != null ? '${order.distance} km' : 'TBD',
-                      AppColors.primary,
+                      const Color(0xFF0284C7),
                     ),
                     _buildInfoItem(
                       context,
@@ -513,11 +525,11 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                       context,
                       Icons.inventory_2_outlined,
                       '$totalItems Paket',
-                      AppColors.secondary,
+                      const Color(0xFF10B981),
                     ),
                   ],
                 ),
-                Divider(height: 24, color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.black12),
+                const Divider(height: 24, color: Color(0xFFE2E8F0)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -526,7 +538,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                       children: [
                         const Text(
                           'Total Tagihan',
-                          style: TextStyle(color: AppColors.textMutedDark, fontSize: 11),
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -535,8 +547,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                             symbol: 'Rp ',
                             decimalDigits: 0,
                           ).format(order.totalAmount),
-                          style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                          style: const TextStyle(
+                            color: Color(0xFF0F172A),
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
@@ -556,10 +568,11 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isPending ? AppColors.primary : AppColors.success,
+                        backgroundColor: isPending ? const Color(0xFF0284C7) : const Color(0xFF10B981),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        elevation: 0,
                       ),
                       child: Text(
                         isPending ? 'Ambil' : 'Detail',
@@ -582,11 +595,11 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
 
     switch (status) {
       case 'prepared':
-        color = AppColors.info;
+        color = const Color(0xFF0284C7);
         label = 'Siap Ambil';
         break;
       case 'ondelivery':
-        color = AppColors.warning;
+        color = const Color(0xFFF59E0B);
         label = 'Dalam Kirim';
         break;
       case 'failed_reschedule':
@@ -599,20 +612,20 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
         break;
       case 'delivered':
       case 'done':
-        color = AppColors.success;
+        color = const Color(0xFF10B981);
         label = 'Selesai';
         break;
       default:
-        color = AppColors.textMutedDark;
+        color = const Color(0xFF64748B);
         label = status.toUpperCase();
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withOpacity(0.15)),
       ),
       child: Text(
         label,

@@ -84,7 +84,7 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
           context: context,
           barrierDismissible: false,
           builder: (context) => Dialog(
-            backgroundColor: const Color(0xFF1E293B),
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -99,13 +99,13 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                   const SizedBox(height: 20),
                   const Text(
                     'Scan Paket Sukses!',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Paket ${order.orderNumber} atas nama ${order.customerName} telah berhasil dimasukkan ke antrean Dalam Pengantaran.',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
@@ -185,28 +185,27 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
   Widget build(BuildContext context) {
     final orderProvider = context.watch<OrderProvider>();
     final pending = orderProvider.pendingOrders;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: widget.onOpenDrawer != null
             ? IconButton(
-                icon: const Icon(Icons.menu_rounded, color: Colors.white),
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A)),
                 onPressed: widget.onOpenDrawer,
               )
             : null,
         title: const Text(
-          'Paket Siap Kirim',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          'Scan Paket Siap Kirim',
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
           IconButton(
             icon: Icon(
               _flashOn ? Icons.flash_on : Icons.flash_off,
-              color: _flashOn ? Colors.amber : Colors.white70,
+              color: _flashOn ? Colors.amber : const Color(0xFF64748B),
             ),
             onPressed: () {
               setState(() {
@@ -237,96 +236,96 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                 }
               },
               child: Container(
-                height: 300,
+                height: 260,
                 color: Colors.black,
                 child: Stack(
-                children: [
-                  // Camera simulation background dark gray
-                  Positioned.fill(
-                    child: Container(
-                      color: const Color(0xFF1E293B),
-                      child: Center(
-                        child: Icon(
-                          Icons.qr_code_scanner,
-                          size: 140,
-                          color: Colors.white.withValues(alpha: _flashOn ? 0.08 : 0.03),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Overlay Scan Frame with laser
-                  Center(
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: _isScanned ? Colors.green : AppColors.secondary,
-                          width: 2.5,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: _isScanned
-                          ? const Center(
-                              child: Icon(Icons.check_circle_rounded, color: Colors.green, size: 70),
-                            )
-                          : AnimatedBuilder(
-                              animation: _laserAnimation,
-                              builder: (context, child) {
-                                return Stack(
-                                  children: [
-                                    Positioned(
-                                      top: _laserAnimation.value * 190,
-                                      left: 8,
-                                      right: 8,
-                                      child: Container(
-                                        height: 3.5,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.secondary,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: AppColors.secondary.withValues(alpha: 0.8),
-                                              blurRadius: 8,
-                                              spreadRadius: 1,
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                    ),
-                  ),
-
-                  // Flash active overlay indicator
-                  if (_flashOn)
+                  children: [
+                    // Camera simulation background dark gray
                     Positioned.fill(
                       child: Container(
-                        color: Colors.white.withValues(alpha: 0.04),
-                      ),
-                    ),
-
-                  Positioned(
-                    bottom: 12,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Text(
-                        _isScanned ? 'Centang Sukses! Memproses...' : 'Arahkan kamera ke barcode resi paket',
-                        style: TextStyle(
-                          color: _isScanned ? Colors.greenAccent : AppColors.secondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                        color: const Color(0xFF0F172A),
+                        child: Center(
+                          child: Icon(
+                            Icons.qr_code_scanner,
+                            size: 120,
+                            color: Colors.white.withOpacity(_flashOn ? 0.08 : 0.03),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+
+                    // Overlay Scan Frame with laser
+                    Center(
+                      child: Container(
+                        width: 180,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _isScanned ? Colors.green : AppColors.primary,
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: _isScanned
+                            ? const Center(
+                                child: Icon(Icons.check_circle_rounded, color: Colors.green, size: 70),
+                              )
+                            : AnimatedBuilder(
+                                animation: _laserAnimation,
+                                builder: (context, child) {
+                                  return Stack(
+                                    children: [
+                                      Positioned(
+                                        top: _laserAnimation.value * 170,
+                                        left: 8,
+                                        right: 8,
+                                        child: Container(
+                                          height: 3.5,
+                                          decoration: const BoxDecoration(
+                                            color: AppColors.primary,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.primary,
+                                                blurRadius: 8,
+                                                spreadRadius: 1,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                      ),
+                    ),
+
+                    // Flash active overlay indicator
+                    if (_flashOn)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.white.withOpacity(0.04),
+                        ),
+                      ),
+
+                    Positioned(
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Text(
+                          _isScanned ? 'Centang Sukses! Memproses...' : 'Arahkan kamera ke barcode resi paket',
+                          style: TextStyle(
+                            color: _isScanned ? Colors.greenAccent : AppColors.primaryLight,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
             ),
 
             // 2. Manual Resi Entry Input
@@ -337,16 +336,20 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                   Expanded(
                     child: TextField(
                       controller: _manualCodeController,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Color(0xFF0F172A)),
                       decoration: InputDecoration(
                         hintText: 'Input Kode Resi Manual (e.g. TRX-101)',
-                        hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
-                        fillColor: Colors.white.withValues(alpha: 0.06),
+                        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        fillColor: Colors.white,
                         filled: true,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        border: OutlineInputBorder(
+                        enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
                         ),
                       ),
                     ),
@@ -356,10 +359,11 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                     onPressed: _submitManualCode,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     ),
-                    child: const Text('Kirim', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: const Text('Kirim', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -377,7 +381,7 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                       const Text(
                         'ANTREAN PAKET',
                         style: TextStyle(
-                          color: Colors.white70,
+                          color: Color(0xFF475569),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.1,
@@ -386,12 +390,12 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.white10,
+                          color: const Color(0xFFEFF6FF),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           '${pending.length} Paket',
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -402,13 +406,14 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.03),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: const Center(
                         child: Text(
                           'Semua paket telah di-scan dan siap dikirim!',
-                          style: TextStyle(color: Colors.white38, fontSize: 13),
+                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                         ),
                       ),
                     )
@@ -423,44 +428,55 @@ class _ScanPackagePageState extends State<ScanPackagePage> with SingleTickerProv
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    order.orderNumber,
-                                    style: const TextStyle(
-                                      color: AppColors.secondary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      order.orderNumber,
+                                      style: const TextStyle(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    order.customerName,
-                                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    order.customerAddress,
-                                    style: const TextStyle(color: Colors.white38, fontSize: 11),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      order.customerName,
+                                      style: const TextStyle(color: Color(0xFF0F172A), fontSize: 13, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      order.customerAddress,
+                                      style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               ElevatedButton.icon(
                                 onPressed: () => _triggerScanSimulation(order),
-                                icon: const Icon(Icons.flash_on, size: 12, color: Colors.black),
-                                label: const Text('Simulasi Scan', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                                icon: const Icon(Icons.flash_on, size: 12, color: Colors.white),
+                                label: const Text('Simulasi Scan', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.amber,
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                 ),

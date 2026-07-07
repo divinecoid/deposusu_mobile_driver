@@ -147,25 +147,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         );
       }
     }
-  }
-
-  void _showUploadConfirmDialog() {
+  }  void _showUploadConfirmDialog() {
     showDialog(
       context: context,
       builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final textColor = isDark ? Colors.white : Colors.black87;
-        final hintColor = isDark ? Colors.grey[500]! : Colors.grey[500]!;
-        final borderColor = isDark
-            ? Colors.white.withValues(alpha: 0.15)
-            : Colors.black.withValues(alpha: 0.15);
-        final fillColor = isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.black.withValues(alpha: 0.04);
+        const textColor = Color(0xFF0F172A);
+        const hintColor = Color(0xFF94A3B8);
+        const borderColor = Color(0xFFE2E8F0);
+        const fillColor = Color(0xFFF8FAFC);
 
         return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          title: Text(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text(
             'Delivery Selesai',
             style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
           ),
@@ -174,21 +168,21 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Apakah foto bukti pengiriman ini sudah jelas?',
-                  style: TextStyle(color: isDark ? Colors.grey[400]! : Colors.grey[600]!),
+                  style: TextStyle(color: Color(0xFF64748B)),
                 ),
                 const SizedBox(height: 16),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.file(_image!, height: 180, width: MediaQuery.of(context).size.width * 0.7, fit: BoxFit.cover),
+                  child: Image.file(_image!, height: 180, width: double.infinity, fit: BoxFit.cover),
                 ),
                 const SizedBox(height: 20),
                 // Field Diterima Oleh
-                Text(
+                const Text(
                   'DITERIMA OLEH',
                   style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    color: Color(0xFF475569),
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.8,
@@ -198,28 +192,29 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 TextField(
                   controller: _receivedByController,
                   textCapitalization: TextCapitalization.words,
-                  style: TextStyle(
-                    color: textColor,           // ← theme-aware, bukan hardcode putih
+                  style: const TextStyle(
+                    color: textColor,
                     fontWeight: FontWeight.w500,
                   ),
-                  cursorColor: AppColors.primary,
+                  cursorColor: const Color(0xFF0284C7),
                   decoration: InputDecoration(
                     hintText: 'Nama penerima barang...',
-                    hintStyle: TextStyle(color: hintColor),
-                    prefixIcon: Icon(Icons.person_outline_rounded, color: AppColors.primary),
+                    hintStyle: const TextStyle(color: hintColor),
+                    prefixIcon: const Icon(Icons.person_outline_rounded, color: Color(0xFF0284C7)),
                     filled: true,
                     fillColor: fillColor,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: borderColor),
+                      borderSide: const BorderSide(color: borderColor),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                      borderSide: const BorderSide(color: Color(0xFF0284C7), width: 2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: borderColor),
+                      borderSide: const BorderSide(color: borderColor),
                     ),
                   ),
                 ),
@@ -229,14 +224,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Batal', style: TextStyle(color: isDark ? Colors.grey[400]! : Colors.grey[600]!)),
+              child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
                 _uploadProofAndFinish();
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.success,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+              ),
               child: const Text('Konfirmasi & Selesai', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
@@ -284,18 +283,17 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-            final textColor = isDark ? Colors.white : Colors.black87;
+            const cardBg = Colors.white;
+            const textColor = Color(0xFF0F172A);
 
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: cardBg,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -308,14 +306,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         width: 36,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white24 : Colors.black12,
+                          color: const Color(0xFFE2E8F0),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
                     const SizedBox(height: 18),
                     
-                    Text(
+                    const Text(
                       'Laporan Gagal Kirim',
                       style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
@@ -323,7 +321,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     const SizedBox(height: 4),
                     const Text(
                       'Pilih tindakan lanjutan untuk paket yang tidak dapat dikirim',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
@@ -361,24 +359,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     const SizedBox(height: 20),
 
                     // Reason Selector Dropdown
-                    Text(
+                    const Text(
                       'Pilih Alasan Kegagalan',
-                      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 11, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Color(0xFF475569), fontSize: 11, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedReason,
-                          dropdownColor: cardBg,
+                          dropdownColor: Colors.white,
                           isExpanded: true,
-                          style: TextStyle(color: textColor, fontSize: 14),
+                          style: const TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w500),
                           items: (_actionType == 'reschedule' ? _rescheduleReasons : _returnReasons)
                               .map((String val) => DropdownMenuItem<String>(
                                     value: val,
@@ -399,24 +397,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
                     // If Reschedule: Date Selector Dropdown
                     if (_actionType == 'reschedule') ...[
-                      Text(
+                      const Text(
                         'Pilih Waktu Kirim Ulang',
-                        style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 11, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Color(0xFF475569), fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: _selectedRescheduleDate,
-                            dropdownColor: cardBg,
+                            dropdownColor: Colors.white,
                             isExpanded: true,
-                            style: TextStyle(color: textColor, fontSize: 14),
+                            style: const TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w500),
                             items: _rescheduleDates
                                 .map((String val) => DropdownMenuItem<String>(
                                       value: val,
@@ -425,9 +423,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                 .toList(),
                             onChanged: (newVal) {
                               if (newVal != null) {
-                                setState(() {
-                                  _selectedRescheduleDate = newVal;
-                                });
+                                  setState(() {
+                                    _selectedRescheduleDate = newVal;
+                                  });
                               }
                             },
                           ),
@@ -447,6 +445,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
                       ),
                       child: const Text(
                         'Konfirmasi Laporan Gagal',
@@ -499,13 +498,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   }
 
   void _showQrisModal(OrderModel order) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return Dialog(
-          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -515,28 +513,28 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Scan QRIS Deposusu',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close_rounded, color: isDark ? Colors.white70 : Colors.black54),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
                       onPressed: () => Navigator.pop(context),
                     )
                   ],
                 ),
-                const Divider(height: 16),
+                const Divider(height: 16, color: Color(0xFFE2E8F0)),
                 const SizedBox(height: 10),
                 
                 // QRIS Logo
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.blue[900],
+                    color: const Color(0xFF1E3A8A),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
@@ -554,7 +552,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
                   child: CustomPaint(
                     painter: _MockQrCodePainter(),
@@ -571,13 +569,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
-                    color: AppColors.secondary,
+                    color: Color(0xFF0284C7),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Resi: ${order.orderNumber} • ${order.customerName}',
-                  style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 11),
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                 ),
                 const SizedBox(height: 8),
 
@@ -585,19 +583,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.info.withValues(alpha: 0.1),
+                    color: const Color(0xFF0284C7).withOpacity(0.08),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                    border: Border.all(color: const Color(0xFFBAE6FD)),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Icon(Icons.info_outline_rounded, color: AppColors.info, size: 16),
-                      const SizedBox(width: 8),
+                      Icon(Icons.info_outline_rounded, color: Color(0xFF0284C7), size: 16),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Setelah customer bayar, foto struk / layar notifikasi pembayaran sebagai bukti.',
                           style: TextStyle(
-                            color: isDark ? Colors.white70 : Colors.black54,
+                            color: Color(0xFF0284C7),
                             fontSize: 11,
                           ),
                         ),
@@ -623,6 +621,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     minimumSize: const Size(double.infinity, 48),
                     padding: const EdgeInsets.symmetric(vertical: 14),
+                    elevation: 0,
                   ),
                 ),
               ],
@@ -703,11 +702,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     Color activeColor,
     VoidCallback onTap,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: isSelected 
-          ? activeColor.withValues(alpha: 0.15) 
-          : (isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.03)),
+          ? activeColor.withOpacity(0.12) 
+          : const Color(0xFFF8FAFC),
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
@@ -717,18 +715,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected ? activeColor : (isDark ? Colors.white10 : Colors.black12),
+              color: isSelected ? activeColor : const Color(0xFFE2E8F0),
               width: 1.5,
             ),
           ),
           child: Column(
             children: [
-              Icon(icon, color: isSelected ? activeColor : Colors.grey, size: 20),
+              Icon(icon, color: isSelected ? activeColor : const Color(0xFF64748B), size: 20),
               const SizedBox(height: 6),
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? activeColor : Colors.grey,
+                  color: isSelected ? activeColor : const Color(0xFF64748B),
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -747,20 +745,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     final isLoading = orderProvider.isLoading;
 
     if (isLoading && order == null) {
-      return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF0284C7))),
       );
     }
 
     if (order == null) {
       return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.surface, title: Text('Detail Tugas')),
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(backgroundColor: Colors.white, title: const Text('Detail Tugas', style: TextStyle(color: Color(0xFF0F172A)))),
         body: Center(
           child: Text(
             orderProvider.errorMessage ?? 'Pesanan tidak ditemukan.',
-            style: const TextStyle(color: Colors.white70),
+            style: const TextStyle(color: Color(0xFF64748B)),
           ),
         ),
       );
@@ -770,13 +768,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     final isOnDelivery = order.status == 'ondelivery';
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: Text(
           order.orderNumber,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -788,8 +787,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.015),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -797,7 +804,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('STATUS PENGIRIMAN', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontSize: 10)),
+                      const Text('STATUS PENGIRIMAN', style: TextStyle(color: Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Text(
                         order.status == 'prepared'
@@ -811,14 +818,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                         : 'Selesai',
                         style: TextStyle(
                           color: order.status == 'prepared'
-                              ? AppColors.info
+                              ? const Color(0xFF0284C7)
                               : order.status == 'ondelivery'
-                                  ? AppColors.warning
+                                  ? const Color(0xFFF59E0B)
                                   : order.status == 'failed_reschedule'
                                       ? Colors.orange
                                       : order.status == 'failed_returned'
                                           ? Colors.redAccent
-                                          : AppColors.success,
+                                          : const Color(0xFF10B981),
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -828,18 +835,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('PEMBAYARAN', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontSize: 10)),
+                      const Text('PEMBAYARAN', style: TextStyle(color: Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: (order.paymentStatus.toUpperCase().contains('PAID') ? AppColors.success : AppColors.danger).withValues(alpha: 0.1),
+                          color: (order.paymentStatus.toUpperCase().contains('PAID') ? const Color(0xFF10B981) : const Color(0xFFEF4444)).withOpacity(0.08),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           order.paymentStatus.toUpperCase().contains('PAID') ? 'LUNAS' : 'BELUM LUNAS',
                           style: TextStyle(
-                            color: order.paymentStatus.toUpperCase().contains('PAID') ? AppColors.success : AppColors.danger,
+                            color: order.paymentStatus.toUpperCase().contains('PAID') ? const Color(0xFF059669) : const Color(0xFFDC2626),
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -856,19 +863,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.assignment_ind_outlined, color: AppColors.secondary, size: 20),
+                    const Icon(Icons.assignment_ind_outlined, color: Color(0xFF0284C7), size: 20),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('DITUGASKAN OLEH', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const Text('DITUGASKAN OLEH', style: TextStyle(color: Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 2),
-                        Text(order.assignedBy!, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text(order.assignedBy!, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 14)),
                       ],
                     ),
                   ],
@@ -881,26 +889,34 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.015),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('INFORMASI PENERIMA', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontWeight: FontWeight.bold, fontSize: 11)),
+                  const Text('INFORMASI PENERIMA', style: TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.bold, fontSize: 11)),
                   const SizedBox(height: 16),
                   Text(
                     order.customerName,
-                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
+                    style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Icon(Icons.phone_outlined, color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, size: 18),
+                      const Icon(Icons.phone_outlined, color: Color(0xFF64748B), size: 18),
                       const SizedBox(width: 8),
                       Text(
                         order.customerPhone.isEmpty ? 'Tidak ada nomor telepon' : order.customerPhone,
-                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontSize: 14),
+                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                       if (order.customerPhone.isNotEmpty) ...[
                         const Spacer(),
@@ -909,10 +925,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
+                              color: const Color(0xFF0284C7).withOpacity(0.08),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.call, color: AppColors.primaryLight, size: 18),
+                            child: const Icon(Icons.call, color: Color(0xFF0284C7), size: 18),
                           ),
                         ),
                       ]
@@ -922,15 +938,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Icon(Icons.location_on_outlined, color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, size: 18),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(Icons.location_on_outlined, color: Color(0xFF64748B), size: 18),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           order.customerAddress.isEmpty ? 'Alamat tidak diset' : order.customerAddress,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, height: 1.4, fontSize: 14),
+                          style: const TextStyle(color: Color(0xFF0F172A), height: 1.4, fontSize: 14, fontWeight: FontWeight.w500),
                         ),
                       ),
                       if (order.customerAddress.isNotEmpty) ...[
@@ -940,10 +956,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.secondary.withValues(alpha: 0.1),
+                              color: const Color(0xFF0284C7).withOpacity(0.08),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.navigation_outlined, color: AppColors.secondary, size: 18),
+                            child: const Icon(Icons.navigation_outlined, color: Color(0xFF0284C7), size: 18),
                           ),
                         ),
                       ]
@@ -958,19 +974,27 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.015),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('DAFTAR BARANG', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontWeight: FontWeight.bold, fontSize: 11)),
+                  const Text('DAFTAR BARANG', style: TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.bold, fontSize: 11)),
                   const SizedBox(height: 16),
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: order.items.length,
-                    separatorBuilder: (_, __) => Divider(height: 24, color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.black12),
+                    separatorBuilder: (_, __) => const Divider(height: 24, color: Color(0xFFE2E8F0)),
                     itemBuilder: (context, index) {
                       final item = order.items[index];
                       return Row(
@@ -982,12 +1006,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                               children: [
                                 Text(
                                   item.productName,
-                                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
+                                  style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 14),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'SKU: ${item.productSku} • Qty: ${item.quantity}',
-                                  style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontSize: 12),
+                                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                                 ),
                               ],
                             ),
@@ -998,24 +1022,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                               symbol: 'Rp ',
                               decimalDigits: 0,
                             ).format(item.subtotal),
-                            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 14),
                           )
                         ],
                       );
                     },
                   ),
-                  Divider(height: 32, color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.black12),
+                  const Divider(height: 32, color: Color(0xFFE2E8F0)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Total Tagihan', style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold)),
+                      const Text('Total Tagihan', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
                       Text(
                         NumberFormat.currency(
                           locale: 'id_ID',
                           symbol: 'Rp ',
                           decimalDigits: 0,
                         ).format(order.totalAmount),
-                        style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w800, fontSize: 18),
+                        style: const TextStyle(color: Color(0xFF0284C7), fontWeight: FontWeight.w900, fontSize: 18),
                       ),
                     ],
                   ),
@@ -1029,33 +1053,34 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('BUKTI PENGIRIMAN', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400]! : Colors.grey[600]!, fontWeight: FontWeight.bold, fontSize: 11)),
+                    const Text('BUKTI PENGIRIMAN', style: TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.bold, fontSize: 11)),
                     const SizedBox(height: 16),
                     if (order.receivedBy != null && order.receivedBy!.isNotEmpty) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.1),
+                          color: const Color(0xFFD1FAE5),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                          border: Border.all(color: const Color(0xFF6EE7B7)),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.person_rounded, color: AppColors.success, size: 20),
+                            const Icon(Icons.person_rounded, color: Color(0xFF059669), size: 20),
                             const SizedBox(width: 12),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('DITERIMA OLEH', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600], fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                                const Text('DITERIMA OLEH', style: TextStyle(color: Color(0xFF047857), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                                 const SizedBox(height: 2),
-                                Text(order.receivedBy!, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black, fontWeight: FontWeight.bold, fontSize: 15)),
+                                Text(order.receivedBy!, style: const TextStyle(color: Color(0xFF065F46), fontWeight: FontWeight.bold, fontSize: 15)),
                               ],
                             ),
                           ],
@@ -1085,7 +1110,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                               width: double.infinity,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => const Center(
-                                child: Icon(Icons.broken_image, color: Colors.white24, size: 50),
+                                child: Icon(Icons.broken_image, color: Color(0xFFCBD5E1), size: 50),
                               ),
                             )
                           : Image.file(
@@ -1094,7 +1119,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                               width: double.infinity,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => const Center(
-                                child: Icon(Icons.broken_image, color: Colors.white24, size: 50),
+                                child: Icon(Icons.broken_image, color: Color(0xFFCBD5E1), size: 50),
                               ),
                             ),
                       ),
@@ -1111,21 +1136,21 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
+                  border: Border.all(color: const Color(0xFF6EE7B7)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.verified_rounded, color: AppColors.success, size: 18),
+                        const Icon(Icons.verified_rounded, color: Color(0xFF059669), size: 18),
                         const SizedBox(width: 8),
-                        Text(
+                        const Text(
                           'BUKTI BAYAR QRIS',
                           style: TextStyle(
-                            color: AppColors.success,
+                            color: Color(0xFF059669),
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.8,
@@ -1140,15 +1165,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.info.withValues(alpha: 0.1),
+                              color: const Color(0xFF0284C7).withOpacity(0.08),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                              border: Border.all(color: const Color(0xFFBAE6FD)),
                             ),
                             child: const Row(
                               children: [
-                                Icon(Icons.camera_alt_rounded, color: AppColors.info, size: 13),
+                                Icon(Icons.camera_alt_rounded, color: Color(0xFF0284C7), size: 13),
                                 SizedBox(width: 4),
-                                Text('Ambil Ulang', style: TextStyle(color: AppColors.info, fontSize: 11, fontWeight: FontWeight.bold)),
+                                Text('Ambil Ulang', style: TextStyle(color: Color(0xFF0284C7), fontSize: 11, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -1164,7 +1189,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         width: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(Icons.broken_image, color: Colors.white24, size: 40),
+                          child: Icon(Icons.broken_image, color: Color(0xFFCBD5E1), size: 40),
                         ),
                       ),
                     ),
@@ -1175,15 +1200,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
             // Action Buttons based on state
             if (isLoading)
-              const Center(child: CircularProgressIndicator(color: AppColors.primary))
+              const Center(child: CircularProgressIndicator(color: Color(0xFF0284C7)))
             else if (isPrepared)
               ElevatedButton(
                 onPressed: _pickup,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: const Color(0xFF0284C7),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1206,6 +1232,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         side: const BorderSide(color: Colors.redAccent, width: 1.5),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
                       ),
                     ),
                   ),
@@ -1217,9 +1244,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             icon: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 18),
                             label: const Text('Tunjukkan QRIS Bayar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0D9488),
+                              backgroundColor: const Color(0xFF0284C7),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
                             ),
                           )
                         : ElevatedButton.icon(
@@ -1230,6 +1258,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                               backgroundColor: AppColors.success,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
                             ),
                           ),
                   ),

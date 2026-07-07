@@ -150,25 +150,22 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   }
 
   Widget _buildDrawer(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final drawerBg = isDark ? const Color(0xFF0F172A).withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.95);
     final auth = context.read<AuthProvider>();
     final user = auth.user ?? {};
 
     return Drawer(
-      backgroundColor: drawerBg,
+      backgroundColor: Colors.white,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header: Driver Info Card
+            // Header: Driver Info Card (Bright Sky Blue Gradient)
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: isDark ? Colors.white10 : Colors.black12)),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1E3A8A), Color(0xFF0F172A)],
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                gradient: LinearGradient(
+                  colors: [Color(0xFFE0F2FE), Color(0xFFEFF6FF)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -178,21 +175,21 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: AppColors.secondary,
+                    backgroundColor: const Color(0xFF0284C7),
                     child: Text(
                       auth.isAuthenticated ? (user['name'] as String).split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join('').toUpperCase() : 'KR',
-                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
                     user['name'] ?? 'Kurir',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     user['email'] ?? 'driver@deposusu.com',
-                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                   ),
                 ],
               ),
@@ -217,12 +214,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             ),
 
             // Footer: Brand Version
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
               child: Center(
                 child: Text(
                   'Deposusu Driver v2.1.0',
-                  style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 11),
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
                 ),
               ),
             ),
@@ -234,22 +231,21 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   Widget _buildDrawerTile(int index, String label, IconData icon) {
     final isSelected = _selectedIndex == index;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: ListTile(
         selected: isSelected,
-        selectedTileColor: AppColors.primary.withValues(alpha: 0.15),
+        selectedTileColor: const Color(0xFF0284C7).withOpacity(0.08),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         leading: Icon(
           icon,
-          color: isSelected ? AppColors.secondary : (isDark ? Colors.white70 : Colors.black54),
+          color: isSelected ? const Color(0xFF0284C7) : const Color(0xFF64748B),
         ),
         title: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppColors.secondary : (isDark ? Colors.white : Colors.black87),
+            color: isSelected ? const Color(0xFF0284C7) : const Color(0xFF0F172A),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             fontSize: 13,
           ),
