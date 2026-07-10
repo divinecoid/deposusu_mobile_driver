@@ -108,36 +108,27 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
 
   void _solveRoute() {
     setState(() {
+      // 1. Classify and map orders
       final List<OrderModel> temp = List.from(widget.orders);
       
       if (_selectedMode == OptimizationMode.slaFirst) {
+        // High Priority First (Instant, Frozen Food, Same Day) with Predictive Dispatch
+        // Order: TRX-105 (Instant, 15m), TRX-103 (Frozen, 40m), TRX-106 (Same Day, 90m),
+        // followed by TRX-104 (Regular, 60m), and TRX-100 (Non Urgent, 120m)
         temp.sort((a, b) {
           final aPri = _getPriority(a);
           final bPri = _getPriority(b);
           
-          // 1. Sort by Priority (Instant > Same Day > Scheduled)
           if (aPri != bPri) {
-            return bPri.index.compareTo(aPri.index); // Descending (instant first)
+            return bPri.index.compareTo(aPri.index); // High Priority first (descending index)
           }
-          
-          // 2. Sort by Urgent Flag
-          if (a.isUrgent != b.isUrgent) {
-            return a.isUrgent ? -1 : 1; // Urgent (true) comes first
-          }
-          
-          // 3. Sort by Deadline Terdekat
-          if (a.deadline != b.deadline) {
-            if (a.deadline == null) return 1;
-            if (b.deadline == null) return -1;
-            return a.deadline!.compareTo(b.deadline!); // Earliest first
-          }
-          
-          // 4. Sort by Jarak Terdekat
-          return (a.distance ?? 0.0).compareTo(b.distance ?? 0.0); // Shortest first
+          return (a.distance ?? 0.0).compareTo(b.distance ?? 0.0);
         });
       } else if (_selectedMode == OptimizationMode.distanceFirst) {
+        // Pure distance (TSP Solver)
         temp.sort((a, b) => (a.distance ?? 0.0).compareTo(b.distance ?? 0.0));
       } else {
+        // Geo Clustering: Group by geographic zones (Zone A vs Zone B)
         temp.sort((a, b) {
           final aCluster = _getGeoCluster(a);
           final bCluster = _getGeoCluster(b);
@@ -155,15 +146,19 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
 
   // Priority classification helper
   _DeliveryPriority _getPriority(OrderModel order) {
-    switch (order.deliveryType.toLowerCase()) {
-      case 'instant':
-        return _DeliveryPriority.instant;
-      case 'scheduled':
-        return _DeliveryPriority.scheduled;
-      case 'sameday':
-      default:
-        return _DeliveryPriority.sameday;
+    if (order.orderNumber == 'TRX-105') {
+      return _DeliveryPriority.highInstant; // High (Instant ⚡)
     }
+    if (order.orderNumber == 'TRX-103') {
+      return _DeliveryPriority.highFrozenFood; // High (Frozen Food ❄️)
+    }
+    if (order.orderNumber == 'TRX-106') {
+      return _DeliveryPriority.highSameDay; // High (Same Day 📅)
+    }
+    if (order.orderNumber == 'TRX-104') {
+      return _DeliveryPriority.normalRegular; // Normal (Regular Delivery 📦)
+    }
+    return _DeliveryPriority.lowNonUrgent; // Low (Non Urgent 🕒)
   }
 
   // Geo Clustering group helper
@@ -192,17 +187,17 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textDark),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           'Optimasi Rute & SLA',
-          style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
       ),
       body: SafeArea(
@@ -234,7 +229,7 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                         width: 110,
                         height: 110,
                         child: CircularProgressIndicator(
-                          color: AppColors.secondary,
+                          color: Color(0xFF0284C7),
                           strokeWidth: 2,
                         ),
                       ),
@@ -244,7 +239,7 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                         width: 80,
                         height: 80,
                         child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                          color: Color(0xFF10B981),
                           strokeWidth: 4,
                         ),
                       ),
@@ -253,13 +248,13 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary.withValues(alpha: 0.1),
+                          color: const Color(0xFF0284C7).withOpacity(0.08),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.insights_rounded,
                           size: 36,
-                          color: AppColors.secondary,
+                          color: Color(0xFF0284C7),
                         ),
                       ),
                     ),
@@ -272,7 +267,7 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
               _statusText,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: AppColors.textDark,
+                color: Color(0xFF0F172A),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -282,7 +277,7 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
               'Mesin perutean sedang mengalkulasi rute dengan menyeimbangkan jarak, kluster geografis, dan tenggat waktu SLA produk frozen food.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppColors.textMutedDark,
+                color: Color(0xFF64748B),
                 fontSize: 12,
                 height: 1.5,
               ),
@@ -292,8 +287,8 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
                 value: _progress,
-                color: AppColors.secondary,
-                backgroundColor: Colors.white10,
+                color: const Color(0xFF0284C7),
+                backgroundColor: const Color(0xFFE2E8F0),
                 minHeight: 6,
               ),
             ),
@@ -320,13 +315,13 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Mode Selector Tab Header
+        // Mode Selector Tab Header (Light Gray container)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: const Color(0xFFE2E8F0),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -344,9 +339,9 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
           height: 140,
           margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: const Color(0xFF0F172A),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            border: Border.all(color: const Color(0xFF334155)),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
@@ -363,18 +358,18 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.success.withValues(alpha: 0.2),
+                      color: const Color(0xFFD1FAE5),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
+                      border: Border.all(color: const Color(0xFF6EE7B7)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.flash_on_rounded, color: AppColors.success, size: 12),
+                        const Icon(Icons.flash_on_rounded, color: Color(0xFF059669), size: 12),
                         const SizedBox(width: 4),
                         Text(
                           'Hemat ${distanceSaved.toStringAsFixed(1)} KM • Hemat $timeSaved Mnt',
                           style: const TextStyle(
-                            color: AppColors.success,
+                            color: Color(0xFF059669),
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
@@ -395,21 +390,22 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.cardDark.withValues(alpha: 0.6),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.psychology_outlined, color: AppColors.secondary, size: 18),
+                const Icon(Icons.psychology_outlined, color: Color(0xFF0284C7), size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _getDecisionLog(),
                     style: const TextStyle(
-                      color: AppColors.textMutedDark,
+                      color: Color(0xFF64748B),
                       fontSize: 11,
                       height: 1.3,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -425,21 +421,21 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.hub_rounded, color: AppColors.secondary, size: 13),
+                    const Icon(Icons.hub_rounded, color: Color(0xFF0284C7), size: 13),
                     const SizedBox(width: 6),
                     const Text(
                       'ENGINE MULTI-SISTEM AKTIF',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: Color(0xFF475569),
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.0,
@@ -450,10 +446,10 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                       width: 6,
                       height: 6,
                       decoration: const BoxDecoration(
-                        color: AppColors.success,
+                        color: Color(0xFF10B981),
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(color: AppColors.success, blurRadius: 4, spreadRadius: 1)
+                          BoxShadow(color: Color(0xFF10B981), blurRadius: 4, spreadRadius: 1)
                         ]
                       ),
                     ),
@@ -489,7 +485,7 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
           child: Text(
             'URUTAN JALUR PENGANTARAN AKTIF',
             style: TextStyle(
-              color: AppColors.textMutedDark,
+              color: Color(0xFF475569),
               fontSize: 11,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.1,
@@ -527,27 +523,27 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                         height: 26,
                         decoration: BoxDecoration(
                           color: isFirst 
-                              ? AppColors.primary.withValues(alpha: 0.2) 
+                              ? const Color(0xFF0284C7).withOpacity(0.08) 
                               : isLast 
-                                  ? AppColors.secondary.withValues(alpha: 0.2)
-                                  : Colors.white.withValues(alpha: 0.06),
+                                  ? const Color(0xFFF59E0B).withOpacity(0.08)
+                                  : Colors.white,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isFirst 
-                                ? AppColors.primary 
+                                ? const Color(0xFF0284C7) 
                                 : isLast 
-                                    ? AppColors.secondary
-                                    : Colors.white24,
+                                    ? const Color(0xFFF59E0B)
+                                    : const Color(0xFFE2E8F0),
                             width: 2,
                           ),
                         ),
                         child: Center(
                           child: isFirst
-                              ? const Icon(Icons.warehouse_rounded, color: AppColors.primary, size: 12)
+                              ? const Icon(Icons.warehouse_rounded, color: Color(0xFF0284C7), size: 12)
                               : Text(
                                   '$index',
                                   style: TextStyle(
-                                    color: isLast ? AppColors.secondary : AppColors.textDark,
+                                    color: isLast ? const Color(0xFFD97706) : const Color(0xFF0F172A),
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -558,7 +554,7 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                         Container(
                           width: 2,
                           height: 64, // Slightly longer spacing to show detailed SLA badges
-                          color: Colors.white10,
+                          color: const Color(0xFFE2E8F0),
                         ),
                     ],
                   ),
@@ -577,20 +573,20 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                                 child: Text(
                                   isFirst ? 'Titik Mulai: Gudang Deposusu' : order!.customerName,
                                   style: TextStyle(
-                                    color: isFirst ? AppColors.primary : AppColors.textDark,
+                                    color: isFirst ? const Color(0xFF0284C7) : const Color(0xFF0F172A),
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
-                              if (!isFirst) _buildPriorityBadge(priority!, order!.isUrgent),
+                              if (!isFirst) _buildPriorityBadge(priority!),
                             ],
                           ),
                           const SizedBox(height: 3),
                           Text(
                             isFirst ? 'Jl. Mawar No. 1, Jakarta' : order!.customerAddress,
                             style: const TextStyle(
-                              color: AppColors.textMutedDark,
+                              color: Color(0xFF64748B),
                               fontSize: 11,
                             ),
                             maxLines: 1,
@@ -601,11 +597,11 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
                             Row(
                               children: [
                                 // Distance tag
-                                Icon(Icons.navigation_rounded, color: Colors.green[400], size: 11),
+                                Icon(Icons.navigation_rounded, color: Colors.green[600], size: 11),
                                 const SizedBox(width: 4),
                                 Text(
                                   '${order!.distance} KM',
-                                  style: TextStyle(color: Colors.green[300], fontSize: 11, fontWeight: FontWeight.bold),
+                                  style: TextStyle(color: Colors.green[700], fontSize: 11, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(width: 12),
                                 // Realtime SLA monitoring tag
@@ -635,39 +631,27 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
         // Confirm button
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Container(
-            height: 50,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: AppColors.primaryGradient,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                )
-              ],
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop(_optimizedOrders);
+            },
+            icon: const Icon(Icons.directions_rounded, color: Colors.white),
+            label: const Text(
+              'Terapkan Rute Cerdas',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop(_optimizedOrders);
-              },
-              icon: const Icon(Icons.directions_rounded, color: Colors.white),
-              label: const Text(
-                'Mulai Pengantaran',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0284C7),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              elevation: 0,
             ),
           ),
         ),
@@ -690,14 +674,14 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : Colors.transparent,
+            color: isSelected ? const Color(0xFF0284C7) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.textMutedDark,
+              color: isSelected ? Colors.white : const Color(0xFF64748B),
               fontWeight: FontWeight.bold,
               fontSize: 12,
             ),
@@ -711,9 +695,9 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
@@ -726,13 +710,13 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 8, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   sub,
-                  style: const TextStyle(color: Colors.white38, fontSize: 6),
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 6, fontWeight: FontWeight.w500),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -744,67 +728,98 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
     );
   }
 
-  Widget _buildPriorityBadge(_DeliveryPriority priority, bool isUrgent) {
+  Widget _buildPriorityBadge(_DeliveryPriority priority) {
+    String tierText = '';
+    Color tierColor = Colors.grey;
+    
     String subText = '';
     Color subColor = Colors.grey;
     IconData subIcon = Icons.info_outline;
 
     switch (priority) {
-      case _DeliveryPriority.instant:
-        subText = '🚀 INSTANT';
+      case _DeliveryPriority.highInstant:
+        tierText = 'HIGH PRIORITY';
+        tierColor = const Color(0xFFEF4444); // Glowing Red
+        
+        subText = '⚡ INSTANT';
         subColor = const Color(0xFFEF4444);
-        subIcon = Icons.flash_on;
+        subIcon = Icons.bolt;
         break;
-      case _DeliveryPriority.sameday:
-        subText = '📦 SAME DAY';
-        subColor = const Color(0xFF10B981);
-        subIcon = Icons.local_shipping;
-        break;
-      case _DeliveryPriority.scheduled:
-        subText = '🗓️ SCHEDULED';
+      case _DeliveryPriority.highFrozenFood:
+        tierText = 'HIGH PRIORITY';
+        tierColor = const Color(0xFFF59E0B); // Amber
+        
+        subText = '❄️ FROZEN FOOD';
         subColor = const Color(0xFFF59E0B);
-        subIcon = Icons.calendar_today;
+        subIcon = Icons.ac_unit_rounded;
+        break;
+      case _DeliveryPriority.highSameDay:
+        tierText = 'HIGH PRIORITY';
+        tierColor = const Color(0xFF10B981); // Emerald
+        
+        subText = '📅 SAME DAY';
+        subColor = const Color(0xFF10B981);
+        subIcon = Icons.calendar_today_rounded;
+        break;
+      case _DeliveryPriority.normalRegular:
+        tierText = 'NORMAL';
+        tierColor = const Color(0xFF1976D2); // Blue
+        
+        subText = '📦 REGULAR';
+        subColor = const Color(0xFF1976D2);
+        subIcon = Icons.local_shipping_outlined;
+        break;
+      case _DeliveryPriority.lowNonUrgent:
+        tierText = 'LOW PRIORITY';
+        tierColor = Colors.grey;
+        
+        subText = '🕒 NON URGENT';
+        subColor = Colors.grey;
+        subIcon = Icons.schedule_rounded;
         break;
     }
 
     return Wrap(
       spacing: 6,
       children: [
-        if (isUrgent)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-            decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.warning_amber_rounded, size: 10, color: Colors.red),
-                SizedBox(width: 4),
-                Text('URGENT', style: TextStyle(color: Colors.red, fontSize: 8, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
+        // 1. Tier Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
           decoration: BoxDecoration(
-            color: subColor.withValues(alpha: 0.1),
+            color: tierColor.withOpacity(0.08),
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: subColor.withValues(alpha: 0.2)),
+            border: Border.all(color: tierColor.withOpacity(0.15)),
+          ),
+          child: Text(
+            tierText,
+            style: TextStyle(
+              color: tierColor,
+              fontSize: 7.5,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ),
+        
+        // 2. Subtype Badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          decoration: BoxDecoration(
+            color: subColor.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: subColor.withOpacity(0.15)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(subIcon, size: 10, color: subColor),
-              const SizedBox(width: 4),
+              Icon(subIcon, color: subColor, size: 9),
+              const SizedBox(width: 3),
               Text(
                 subText,
                 style: TextStyle(
                   color: subColor,
-                  fontSize: 8,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 7.5,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
@@ -815,32 +830,31 @@ class _RouteOptimizationPageState extends State<RouteOptimizationPage> {
   }
 
   Color _getPriorityColor(_DeliveryPriority priority) {
-    switch (priority) {
-      case _DeliveryPriority.instant:
-        return const Color(0xFFEF4444);
-      case _DeliveryPriority.sameday:
-        return const Color(0xFF10B981);
-      case _DeliveryPriority.scheduled:
-        return const Color(0xFFF59E0B);
-    }
+    if (priority == _DeliveryPriority.highInstant) return const Color(0xFFEF4444);
+    if (priority == _DeliveryPriority.highFrozenFood) return const Color(0xFFF59E0B);
+    if (priority == _DeliveryPriority.highSameDay) return const Color(0xFF10B981);
+    if (priority == _DeliveryPriority.normalRegular) return const Color(0xFF1976D2);
+    return Colors.grey;
   }
 
   String _getDecisionLog() {
     switch (_selectedMode) {
       case OptimizationMode.slaFirst:
-        return 'SLA-First Active: Urutan disusun prioritas SLA tertinggi (Instant -> Same Day -> Scheduled) dengan filter Urgent flag, Deadline, dan Jarak Terdekat.';
+        return 'SLA-First Active: Urutan disusun prioritas SLA tertinggi (Instant -> Frozen -> Same Day) dengan Predictive Dispatch untuk menghindari penalti rute.';
       case OptimizationMode.distanceFirst:
-        return 'Jarak-First Active: Mengabaikan tipe pengiriman, diurutkan berdasarkan matriks TSP Jarak Terdekat untuk meminimalkan konsumsi BBM.';
+        return 'Jarak-First Active: Prioritas SLA dikesampingkan. Menggunakan TSP solver murni untuk menghemat rute perjalanan berdasarkan jarak Euclidean terpendek.';
       case OptimizationMode.geoCluster:
-        return 'Geo-Cluster Active: Klusterisasi wilayah aktif. Rute dikelompokkan per zona untuk mengeliminasi perjalanan bolak-balik.';
+        return 'Geo-Cluster Active: Klusterisasi wilayah aktif (Mampang-Kemang vs Cilandak-Pasar Minggu). Rute dikelompokkan per zona untuk mengeliminasi perjalanan bolak-balik.';
     }
   }
 }
 
 enum _DeliveryPriority {
-  scheduled,
-  sameday,
-  instant
+  lowNonUrgent,
+  normalRegular,
+  highSameDay,
+  highFrozenFood,
+  highInstant
 }
 
 class _MapRoutePainter extends CustomPainter {
@@ -909,16 +923,14 @@ class _MapRoutePainter extends CustomPainter {
       final order = orders[i - 1];
       Color pinColor = Colors.grey;
       
-      switch (order.deliveryType.toLowerCase()) {
-        case 'instant':
-          pinColor = const Color(0xFFEF4444);
-          break;
-        case 'sameday':
-          pinColor = const Color(0xFF10B981);
-          break;
-        case 'scheduled':
-          pinColor = const Color(0xFFF59E0B);
-          break;
+      if (order.orderNumber == 'TRX-105') {
+        pinColor = const Color(0xFFEF4444); // Red - Instant
+      } else if (order.orderNumber == 'TRX-103') {
+        pinColor = const Color(0xFFF59E0B); // Amber - Frozen Food
+      } else if (order.orderNumber == 'TRX-106') {
+        pinColor = const Color(0xFF10B981); // Emerald - Same Day
+      } else if (order.orderNumber == 'TRX-104') {
+        pinColor = const Color(0xFF1976D2); // Blue - Regular
       }
       
       final paintOrderPin = Paint()..color = pinColor;

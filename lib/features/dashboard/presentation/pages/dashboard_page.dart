@@ -25,71 +25,16 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  void _handleCheckIn() async {
-    final shift = 'Full Day';
-    final success = await context.read<DashboardProvider>().checkIn(
-      latitude: -6.2088, // Placeholder GPS coordinate (Jakarta)
-      longitude: 106.8456,
-      shift: shift,
-    );
-
-    if (mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Check-In berhasil! Selamat bekerja.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        final error = context.read<DashboardProvider>().errorMessage;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Gagal Check-In.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _handleCheckOut() async {
-    final success = await context.read<DashboardProvider>().checkOut(
-      latitude: -6.2088,
-      longitude: 106.8456,
-    );
-
-    if (mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Check-Out berhasil! Terima kasih untuk kerja keras Anda hari ini.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        final error = context.read<DashboardProvider>().errorMessage;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Gagal Check-Out.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final dashboardProvider = context.watch<DashboardProvider>();
-    final themeProvider = context.watch<ThemeProvider>();
-    final isDark = themeProvider.isDarkMode;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final surfaceColor = colorScheme.surface;
-    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    const textColor = Color(0xFF0F172A);
+    const mutedTextColor = Color(0xFF64748B);
+    final colorScheme = Theme.of(context).colorScheme;
+    const isDark = false;
+    const surfaceColor = Colors.white;
 
     final user = authProvider.user ?? {};
     final driverProfile = user['profile'] ?? {};
@@ -106,22 +51,23 @@ class _DashboardPageState extends State<DashboardPage> {
         : '--:--';
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: widget.onOpenDrawer != null
             ? IconButton(
-                icon: Icon(Icons.menu_rounded, color: isDark ? Colors.white : Colors.black87),
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A)),
                 onPressed: widget.onOpenDrawer,
               )
             : null,
-        title: const Text('DEPOSUSU'),
+        title: const Text(
+          'DEPOSUSU',
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-            onPressed: () => themeProvider.toggleTheme(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.red),
+            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
             onPressed: () => authProvider.logout(),
           ),
         ],
@@ -129,53 +75,69 @@ class _DashboardPageState extends State<DashboardPage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => dashboardProvider.fetchDashboardData(),
-          color: colorScheme.primary,
+          color: AppColors.primary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Header Profil Kurir
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: colorScheme.primary,
-                      child: Text(
-                        authProvider.isAuthenticated ? (authProvider.user!['name'] as String).split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join('').toUpperCase() : 'KR',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                // Header Profil Kurir (Card Putih Premium)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: const Color(0xFF0284C7).withOpacity(0.1),
+                        child: Text(
+                          authProvider.isAuthenticated ? (authProvider.user!['name'] as String).split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join('').toUpperCase() : 'KR',
+                          style: const TextStyle(
+                            color: Color(0xFF0284C7),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user['name'] ?? 'Kurir',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user['name'] ?? 'Kurir',
+                              style: const TextStyle(
+                                color: textColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${driverProfile['vehicle_type'] ?? "Tugas Kurir"} • ${driverProfile['license_plate'] ?? "Siap Bertugas"}',
-                            style: TextStyle(
-                              color: mutedTextColor,
-                              fontSize: 14,
+                            const SizedBox(height: 4),
+                            Text(
+                              '${driverProfile['vehicle_type'] ?? "Tugas Kurir"} • ${driverProfile['license_plate'] ?? "Siap Bertugas"}',
+                              style: const TextStyle(
+                                color: mutedTextColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 28),
 
@@ -205,6 +167,23 @@ class _DashboardPageState extends State<DashboardPage> {
                               letterSpacing: 1.1,
                             ),
                           ),
+                          const Spacer(),
+                          // Info badge otomatis
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0284C7).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Otomatis',
+                              style: TextStyle(
+                                color: Color(0xFF0284C7),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -219,55 +198,44 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      if (isLoading)
-                        Center(child: CircularProgressIndicator(color: colorScheme.primary))
-                      else if (!attendance['checked_in'])
-                        ElevatedButton(
-                          onPressed: _handleCheckIn,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Mulai Bertugas', style: TextStyle(fontWeight: FontWeight.bold)),
-                        )
-                      else if (attendance['checked_in'] && !attendance['checked_out'])
-                        ElevatedButton(
-                          onPressed: _handleCheckOut,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Selesai Bertugas', style: TextStyle(fontWeight: FontWeight.bold)),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.check_circle_rounded, size: 20, color: Colors.green[600]),
-                              const SizedBox(width: 8),
-                              Text(
-                                '✓ Hari Kerja Selesai',
+                      const SizedBox(height: 16),
+                      // Info pesan otomatis
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: attendance['checked_in'] == true
+                              ? const Color(0xFF10B981).withOpacity(0.06)
+                              : const Color(0xFF0284C7).withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              attendance['checked_in'] == true
+                                  ? Icons.check_circle_outline_rounded
+                                  : Icons.info_outline_rounded,
+                              size: 16,
+                              color: attendance['checked_in'] == true
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF0284C7),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                attendance['checked_in'] == true
+                                    ? 'Absensi tercatat otomatis saat ambil orderan pertama.'
+                                    : 'Absensi akan tercatat otomatis saat Anda mengambil orderan pertama hari ini.',
                                 style: TextStyle(
-                                  color: Colors.green[700],
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                                  color: attendance['checked_in'] == true
+                                      ? const Color(0xFF059669)
+                                      : const Color(0xFF0284C7),
+                                  fontSize: 11,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -448,9 +416,16 @@ class _DashboardPageState extends State<DashboardPage> {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -472,8 +447,8 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: 16),
           Text(
             label,
-            style: TextStyle(
-              color: textColor,
+            style: const TextStyle(
+              color: Color(0xFF0F172A),
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
@@ -487,9 +462,16 @@ class _DashboardPageState extends State<DashboardPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -500,8 +482,8 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(width: 16),
               Text(
                 label,
-                style: TextStyle(
-                  color: textColor,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -529,9 +511,8 @@ class _DashboardPageState extends State<DashboardPage> {
     Color color,
     VoidCallback onTap,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
-      color: isDark ? AppColors.cardDark : Colors.white,
+      color: Colors.white,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
@@ -541,8 +522,15 @@ class _DashboardPageState extends State<DashboardPage> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black12,
+              color: const Color(0xFFE2E8F0),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.015),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -551,7 +539,7 @@ class _DashboardPageState extends State<DashboardPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
+                  color: color.withOpacity(0.08),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -559,8 +547,8 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(height: 8),
               Text(
                 title,
-                style: TextStyle(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -569,7 +557,7 @@ class _DashboardPageState extends State<DashboardPage> {
               Text(
                 subtitle,
                 style: const TextStyle(
-                  color: AppColors.textMutedDark,
+                  color: Color(0xFF64748B),
                   fontSize: 11,
                 ),
                 maxLines: 1,
@@ -592,12 +580,11 @@ class _DashboardPageState extends State<DashboardPage> {
     VoidCallback? onConfirm,
     bool isCallOption = false,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -608,7 +595,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
+                    color: color.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 36),
@@ -616,8 +603,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 const SizedBox(height: 20),
                 Text(
                   title,
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -626,8 +613,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
                     fontSize: 14,
                     height: 1.5,
                   ),
@@ -679,13 +666,13 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: isDark ? Colors.white24 : Colors.black12),
+                            side: const BorderSide(color: Color(0xFFE2E8F0)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Batal',
-                            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+                            style: TextStyle(color: Color(0xFF64748B)),
                           ),
                         ),
                       ),
@@ -701,6 +688,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             padding: const EdgeInsets.symmetric(vertical: 12),
+                            elevation: 0,
                           ),
                           child: Text(confirmLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
                         ),
@@ -766,121 +754,110 @@ class _DashboardPageState extends State<DashboardPage> {
             bool isScanned = false;
             return Dialog(
               insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              backgroundColor: Colors.black,
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
-                    minHeight: 300,
-                  ),
-                  child: Stack(
+                child: SizedBox(
+                  height: 440,
+                  child: Column(
                     children: [
-                      // Camera simulation view
-                      Positioned.fill(
-                        child: Container(
-                          color: const Color(0xFF1E293B),
-                          child: Center(
-                            child: Opacity(
-                              opacity: 0.2,
-                              child: Icon(
-                                Icons.photo_camera_back_rounded,
-                                color: Colors.white.withValues(alpha: 0.8),
-                                size: 120,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      // Scanner overlay grid
-                      Positioned.fill(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      // Camera simulation view (Top)
+                      Expanded(
+                        child: Stack(
                           children: [
-                            Container(
-                              width: 250,
-                              height: 250,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: isScanned ? Colors.green : Colors.amber, width: 2.5),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: isScanned 
-                                ? const Center(
-                                    child: Icon(Icons.check_circle_rounded, color: Colors.green, size: 80),
-                                  )
-                                : Stack(
-                                    children: [
-                                      // Laser scanning line animation simulator
-                                      TweenAnimationBuilder<double>(
-                                        tween: Tween<double>(begin: 0.0, end: 1.0),
-                                        duration: const Duration(seconds: 2),
-                                        builder: (context, value, child) {
-                                          return Positioned(
-                                            top: value * 240,
-                                            left: 10,
-                                            right: 10,
-                                            child: Container(
-                                              height: 3,
-                                              decoration: BoxDecoration(
-                                                color: Colors.amber,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.amber.withValues(alpha: 0.6),
-                                                    blurRadius: 8,
-                                                    spreadRadius: 1,
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ],
+                            Positioned.fill(
+                              child: Container(
+                                color: const Color(0xFF0F172A),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.photo_camera_back_rounded,
+                                    color: Colors.white.withOpacity(0.04),
+                                    size: 100,
                                   ),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              isScanned ? 'Scan Berhasil!' : 'Posisikan Barcode Paket Di Dalam Kotak',
-                              style: TextStyle(
-                                color: isScanned ? Colors.greenAccent : Colors.amberAccent,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Simulator Scanner Deposusu',
-                              style: TextStyle(color: Colors.white38, fontSize: 12),
+                            // Scanner overlay grid
+                            Center(
+                              child: Container(
+                                width: 160,
+                                height: 160,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: isScanned ? Colors.green : const Color(0xFF0284C7), width: 2.5),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: isScanned 
+                                  ? const Center(
+                                      child: Icon(Icons.check_circle_rounded, color: Colors.green, size: 60),
+                                    )
+                                  : Stack(
+                                      children: [
+                                        // Laser scanning line
+                                        TweenAnimationBuilder<double>(
+                                          tween: Tween<double>(begin: 0.0, end: 1.0),
+                                          duration: const Duration(seconds: 2),
+                                          builder: (context, value, child) {
+                                            return Positioned(
+                                              top: value * 150,
+                                              left: 10,
+                                              right: 10,
+                                              child: Container(
+                                                height: 3,
+                                                decoration: const BoxDecoration(
+                                                  color: Color(0xFF0284C7),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Color(0xFF0284C7),
+                                                      blurRadius: 8,
+                                                      spreadRadius: 1,
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                              ),
+                            ),
+                            // Cancel/Close button
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Colors.black45,
+                                child: IconButton(
+                                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-
-                      // Cancel/Close button
-                      Positioned(
-                        top: 16,
-                        right: 16,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.black54,
-                          child: IconButton(
-                            icon: const Icon(Icons.close_rounded, color: Colors.white),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                        ),
-                      ),
-
-                      // Simulate click-to-scan button
-                      Positioned(
-                        bottom: 24,
-                        left: 24,
-                        right: 24,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      // Info & Button Area (Bottom)
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        color: Colors.white,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            Text(
+                              isScanned ? 'Scan Berhasil!' : 'Posisikan Barcode Paket Di Dalam Kotak',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isScanned ? Colors.green : const Color(0xFF0F172A),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
                             if (!isScanned)
-                              ElevatedButton.icon(
+                              ElevatedButton(
                                 onPressed: () {
                                   setState(() {
                                     isScanned = true;
@@ -898,13 +875,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                     }
                                   });
                                 },
-                                icon: const Icon(Icons.flash_on_rounded, color: Colors.black),
-                                label: const Text('Simulasikan Scan Paket', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.amber,
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  elevation: 0,
                                 ),
+                                child: const Text('Simulasikan Scan Paket', style: TextStyle(fontWeight: FontWeight.bold)),
                               ),
                           ],
                         ),

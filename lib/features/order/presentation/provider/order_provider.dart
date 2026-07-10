@@ -9,35 +9,12 @@ class OrderProvider extends ChangeNotifier {
   final ApiClient apiClient;
   bool _isLoading = false;
   String? _errorMessage;
-  bool _mockInitialized = false;
-
   List<OrderModel> _pendingOrders = [];
   List<OrderModel> _deliveringOrders = [];
   List<OrderModel> _completedOrders = [];
   OrderModel? _currentOrderDetail;
-  
-  // Track verified/scanned order IDs in the current active batch
-  final List<int> _verifiedOrderIds = [];
 
   OrderProvider(this.apiClient);
-
-  List<int> get verifiedOrderIds => List.unmodifiable(_verifiedOrderIds);
-
-  void verifyOrder(int id) {
-    if (!_verifiedOrderIds.contains(id)) {
-      _verifiedOrderIds.add(id);
-      notifyListeners();
-    }
-  }
-
-  void clearVerifiedOrders() {
-    _verifiedOrderIds.clear();
-    notifyListeners();
-  }
-
-  void _initMockData() {
-    // Mock data disabled to use actual data only
-  }
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -61,9 +38,10 @@ class OrderProvider extends ChangeNotifier {
       } else {
         throw Exception(data['message'] ?? 'Gagal memuat pesanan');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Error fetchPendingOrders: $e');
+      debugPrint('Stacktrace: $stack');
       _errorMessage = e.toString();
-      _pendingOrders = [];
     }
 
     _isLoading = false;
@@ -85,9 +63,10 @@ class OrderProvider extends ChangeNotifier {
       } else {
         throw Exception(data['message'] ?? 'Gagal memuat pesanan');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Error fetchDeliveringOrders: $e');
+      debugPrint('Stacktrace: $stack');
       _errorMessage = e.toString();
-      _deliveringOrders = [];
     }
 
     _isLoading = false;
@@ -109,9 +88,10 @@ class OrderProvider extends ChangeNotifier {
       } else {
         throw Exception(data['message'] ?? 'Gagal memuat pesanan');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Error fetchCompletedOrders: $e');
+      debugPrint('Stacktrace: $stack');
       _errorMessage = e.toString();
-      _completedOrders = [];
     }
 
     _isLoading = false;
@@ -133,7 +113,9 @@ class OrderProvider extends ChangeNotifier {
       } else {
         throw Exception(data['message'] ?? 'Gagal memuat detail pesanan');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Error fetchOrderDetail: $e');
+      debugPrint('Stacktrace: $stack');
       _errorMessage = e.toString();
     }
 
@@ -166,31 +148,6 @@ class OrderProvider extends ChangeNotifier {
         return true;
       } else {
         throw Exception(data['message'] ?? 'Gagal mengambil tugas');
-      }
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> rejectOrder(int id) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      final response = await apiClient.post('${AppConstants.orders}/$id/reject', body: {});
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
-        _pendingOrders.removeWhere((o) => o.id == id);
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        throw Exception(data['message'] ?? 'Gagal menolak penawaran');
       }
     } catch (e) {
       _errorMessage = e.toString();
@@ -343,11 +300,6 @@ class OrderProvider extends ChangeNotifier {
       );
     }
 
-    notifyListeners();
-  }
-
-  void setDeliveringOrders(List<OrderModel> orders) {
-    _deliveringOrders = orders;
     notifyListeners();
   }
 }

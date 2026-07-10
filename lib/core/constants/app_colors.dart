@@ -6,8 +6,8 @@ class AppColors {
   static const Color primaryLight = Color(0xFF42A5F5);
   static const Color primaryDark = Color(0xFF0D47A1);
   
-  static const Color secondary = Color(0xFFFFC107); // Vibrant Amber
-  static const Color secondaryLight = Color(0xFFFFE082);
+  static const Color secondary = Color(0xFF10B981); // Emerald Green
+  static const Color secondaryLight = Color(0xFFA7F3D0);
   
   // Background Colors
   static const Color bgDark = Color(0xFF0F172A);

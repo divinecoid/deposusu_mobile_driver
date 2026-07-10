@@ -15,6 +15,9 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider(this.apiClient) {
     _tryAutoLogin();
+    apiClient.onUnauthorized = () {
+      logout();
+    };
   }
 
   bool get isLoading => _isLoading;
@@ -35,6 +38,17 @@ class AuthProvider extends ChangeNotifier {
     
     if (prefs.containsKey('driver_shift')) {
       _selectedShift = prefs.getString('driver_shift');
+    }
+    
+    if (_token == 'demo_driver_token_123') {
+      // Force clean demo token to connect to real backend
+      await prefs.remove('driver_token');
+      await prefs.remove('driver_user');
+      _token = null;
+      _user = null;
+      apiClient.clearToken();
+      notifyListeners();
+      return;
     }
     
     if (_token != null) {

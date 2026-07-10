@@ -32,7 +32,6 @@ class _CodManagementPageState extends State<CodManagementPage> {
 
 
   void _showQrisModal(OrderModel order) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -40,7 +39,7 @@ class _CodManagementPageState extends State<CodManagementPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return Dialog(
-              backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -52,22 +51,22 @@ class _CodManagementPageState extends State<CodManagementPage> {
                       children: [
                         const Text(
                           'Scan QRIS Deposusu',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded),
+                          icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
                           onPressed: () => Navigator.pop(context),
                         )
                       ],
                     ),
-                    const Divider(height: 16),
+                    const Divider(height: 16, color: Color(0xFFE2E8F0)),
                     const SizedBox(height: 10),
                     
                     // QRIS Logo
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.blue[900],
+                        color: const Color(0xFF1E3A8A),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -85,7 +84,7 @@ class _CodManagementPageState extends State<CodManagementPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: CustomPaint(
                         painter: _MockQrCodePainter(),
@@ -100,15 +99,15 @@ class _CodManagementPageState extends State<CodManagementPage> {
                         decimalDigits: 0,
                       ).format(order.totalAmount),
                       style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.secondary,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF0284C7),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Resi: ${order.orderNumber} • ${order.customerName}',
-                      style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 11),
+                      style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                     ),
                     const SizedBox(height: 24),
                     
@@ -121,7 +120,8 @@ class _CodManagementPageState extends State<CodManagementPage> {
                         backgroundColor: AppColors.success,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        minimumSize: const Size(double.infinity, 44),
+                        minimumSize: const Size(double.infinity, 46),
+                        elevation: 0,
                       ),
                       child: const Text('Konfirmasi & Foto Bukti Bayar', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
@@ -224,25 +224,21 @@ class _CodManagementPageState extends State<CodManagementPage> {
     // List to display in UI (only active ones)
     final List<OrderModel> _codOrders = delivering.where((o) => o.paymentStatus.toUpperCase() == 'UNPAID' || o.paymentStatus.toUpperCase() == 'PAID_QRIS' || o.paymentStatus.toUpperCase() == 'PAID_CASH' || o.orderNumber == 'TRX-104').toList();
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.cardDark : Colors.white;
-    final border = isDark ? Colors.white10 : Colors.black12;
-
     return Scaffold(
-      backgroundColor: isDark ? AppColors.bgDark : Colors.grey[100],
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: widget.onOpenDrawer != null
             ? IconButton(
-                icon: Icon(Icons.menu_rounded, color: isDark ? Colors.white : Colors.black87),
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A)),
                 onPressed: widget.onOpenDrawer,
               )
             : null,
-        title: Text(
+        title: const Text(
           'Pembayaran',
           style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
+            color: Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -258,14 +254,15 @@ class _CodManagementPageState extends State<CodManagementPage> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF1E3A8A), Color(0xFF0F172A)],
+                  colors: [Color(0xFFE0F2FE), Color(0xFFEFF6FF)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFBAE6FD), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withValues(alpha: 0.2),
+                    color: Colors.black.withOpacity(0.02),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   )
@@ -275,8 +272,8 @@ class _CodManagementPageState extends State<CodManagementPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'SALDO',
-                    style: TextStyle(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                    'TOTAL SALDO QRIS DIKUMPULKAN',
+                    style: TextStyle(color: Color(0xFF475569), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.1),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -286,15 +283,15 @@ class _CodManagementPageState extends State<CodManagementPage> {
                       decimalDigits: 0,
                     ).format(_collectedCod),
                     style: const TextStyle(
-                      color: Color(0xFF10B981), // Emerald green representing 0 cash held
+                      color: Color(0xFF10B981), // Emerald green representing cashless success
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   const SizedBox(height: 2),
                   const Text(
-                    'Strictly Cashless (Enforced QRIS Only)',
-                    style: TextStyle(color: Colors.white38, fontSize: 10, fontStyle: FontStyle.italic),
+                    'Non-Tunai Saja (Enforced QRIS Only)',
+                    style: TextStyle(color: Color(0xFF64748B), fontSize: 10, fontStyle: FontStyle.italic, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -303,25 +300,26 @@ class _CodManagementPageState extends State<CodManagementPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Tagihan QRIS Pending', style: TextStyle(color: Colors.white54, fontSize: 10)),
+                          const Text('Tagihan QRIS Pending', style: TextStyle(color: Color(0xFF475569), fontSize: 10)),
                           const SizedBox(height: 4),
                           Text(
                             NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(_pendingCod),
-                            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                            style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFBAE6FD)),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.shield_outlined, color: AppColors.secondary, size: 14),
+                            Icon(Icons.shield_outlined, color: Color(0xFF10B981), size: 14),
                             SizedBox(width: 6),
-                            Text('Secure', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+                            Text('Aman', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
@@ -336,18 +334,18 @@ class _CodManagementPageState extends State<CodManagementPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'ANTREAN PEMBAYARAN',
                   style: TextStyle(
-                    color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                    color: Color(0xFF475569),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.1,
                   ),
                 ),
                 Text(
-                  '${_codOrders.length} COD Active',
-                  style: TextStyle(color: isDark ? Colors.white60 : Colors.black54, fontSize: 11),
+                  '${_codOrders.length} COD Aktif',
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -357,14 +355,14 @@ class _CodManagementPageState extends State<CodManagementPage> {
               Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: cardBg,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: border),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: const Center(
                   child: Text(
                     'Tidak ada paket pembayaran COD aktif.',
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                   ),
                 ),
               )
@@ -381,9 +379,16 @@ class _CodManagementPageState extends State<CodManagementPage> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: cardBg,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: border),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       children: [
@@ -393,7 +398,7 @@ class _CodManagementPageState extends State<CodManagementPage> {
                             Text(
                               order.orderNumber,
                               style: const TextStyle(
-                                color: AppColors.secondary,
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
@@ -402,14 +407,14 @@ class _CodManagementPageState extends State<CodManagementPage> {
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: isPaid 
-                                    ? AppColors.success.withValues(alpha: 0.1) 
-                                    : Colors.orange.withValues(alpha: 0.1),
+                                    ? const Color(0xFFD1FAE5) 
+                                    : const Color(0xFFFFEDD5),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 isPaid ? 'LUNAS (QRIS)' : 'BELUM BAYAR (COD)',
                                 style: TextStyle(
-                                  color: isPaid ? AppColors.success : Colors.orange,
+                                  color: isPaid ? const Color(0xFF059669) : const Color(0xFFD97706),
                                   fontSize: 9,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -420,37 +425,37 @@ class _CodManagementPageState extends State<CodManagementPage> {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            const Icon(Icons.person_outline, size: 14, color: Colors.grey),
+                            const Icon(Icons.person_outline, size: 14, color: Color(0xFF64748B)),
                             const SizedBox(width: 6),
                             Text(
                               order.customerName,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                            const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF64748B)),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 order.customerAddress,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                               ),
                             ),
                           ],
                         ),
-                        const Divider(height: 24),
+                        const Divider(height: 24, color: Color(0xFFE2E8F0)),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Total Tagihan', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                                const Text('Total Tagihan', style: TextStyle(color: Color(0xFF64748B), fontSize: 10)),
                                 const SizedBox(height: 2),
                                 Text(
                                   NumberFormat.currency(
@@ -458,19 +463,21 @@ class _CodManagementPageState extends State<CodManagementPage> {
                                     symbol: 'Rp ',
                                     decimalDigits: 0,
                                   ).format(order.totalAmount),
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
                                 ),
                               ],
                             ),
                             if (!isPaid)
                               ElevatedButton.icon(
                                 onPressed: () => _showQrisModal(order),
-                                icon: const Icon(Icons.qr_code_2_rounded, color: Colors.black, size: 16),
-                                label: const Text('Bayar via QRIS', style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold)),
+                                icon: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 16),
+                                label: const Text('Bayar via QRIS', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.secondary,
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  elevation: 0,
                                 ),
                               )
                             else
@@ -493,7 +500,6 @@ class _CodManagementPageState extends State<CodManagementPage> {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(content: Text('Delivery Selesai!'), backgroundColor: AppColors.success),
                                         );
-                                        // State will automatically update via OrderProvider
                                       }
                                     }
                                   } catch (e) {
@@ -510,6 +516,7 @@ class _CodManagementPageState extends State<CodManagementPage> {
                                   backgroundColor: AppColors.success,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  elevation: 0,
                                 ),
                               )
                           ],

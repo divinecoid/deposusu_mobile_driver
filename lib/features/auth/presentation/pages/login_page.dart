@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../main.dart'; // To access MainNavigationPage
 import '../provider/auth_provider.dart';
-import 'otp_page.dart';
 
 // Demo credentials for testing
 const String _demoEmail = 'driver@deposusu.com';
-const String _demoPhone = '081234567890';
+const String _demoPassword = 'password123';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,47 +20,51 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _loginController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _loginController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  void _submit() async {
+  void _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.requestOtp(
-      _loginController.text.trim(),
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.login(
+      _emailController.text.trim(),
+      _passwordController.text,
     );
 
-    if (success) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kode OTP berhasil dikirim!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => OtpPage(loginValue: _loginController.text.trim()),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Gagal mengirim OTP.'),
-            backgroundColor: AppColors.danger,
-          ),
-        );
-      }
+    if (success && mounted) {
+      // MaterialApp home will reactively transition to MainNavigationPage
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? 'Login gagal. Silakan periksa kredensial Anda.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     }
+  }
+
+  void _fillDemoCredentials() {
+    setState(() {
+      _emailController.text = _demoEmail;
+      _passwordController.text = _demoPassword;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Akun demo kurir telah diisi!'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -69,173 +72,203 @@ class _LoginPageState extends State<LoginPage> {
     final isLoading = context.watch<AuthProvider>().isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header/Logo
-              const Icon(
-                Icons.local_shipping_outlined,
-                size: 80,
-                color: AppColors.secondary,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'DEPOSUSU KURIR',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textDark,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Masuk untuk melihat dan mengantar pesanan',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textMutedDark,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 48),
+      backgroundColor: Colors.white,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFE0F2FE), // Biru langit muda pastel
+              Colors.white,
+              Colors.white,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // LOGO BRAND
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0284C7).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.local_shipping_outlined, // shipping logo
+                          size: 72,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'DEPOSUSU KURIR',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Masuk untuk melihat dan mengantar pesanan',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 48),
 
-              // Form Card
-              Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  color: AppColors.cardDark,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    )
+                    // INPUT EMAIL
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        labelStyle: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF0284C7)),
+                        filled: true,
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Color(0xFF0284C7), width: 2),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email tidak boleh kosong';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Format email tidak valid';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // INPUT PASSWORD
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        labelStyle: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                        prefixIcon: const Icon(Icons.lock_outlined, color: Color(0xFF0284C7)),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            color: const Color(0xFF64748B),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Color(0xFF0284C7), width: 2),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password tidak boleh kosong';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 36),
+
+                    // BUTTON LOGIN
+                    ElevatedButton(
+                      onPressed: isLoading ? null : _handleLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0284C7),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        elevation: 2,
+                        shadowColor: const Color(0xFF0284C7).withOpacity(0.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'MASUK',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Demo Credentials Card
+                    _buildDemoCard(),
+
+                    const SizedBox(height: 28),
+                    const Text(
+                      'v1.1.0 • Deposusu Kurir',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF94A3B8),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Login Field
-                      const Text(
-                        'Nomor HP / Email',
-                        style: TextStyle(
-                          color: AppColors.textDark,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _loginController,
-                        style: const TextStyle(color: AppColors.textDark),
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          hintText: 'Masukkan Nomor HP atau Email',
-                          hintStyle: const TextStyle(color: Colors.white24),
-                          prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.textMutedDark),
-                          filled: true,
-                          fillColor: AppColors.bgDark,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Nomor HP atau Email wajib diisi';
-                          }
-                          // Simple validation for email or phone number
-                          final val = value.trim();
-                          final isEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val);
-                          final isPhone = RegExp(r'^[0-9+]{8,15}$').hasMatch(val);
-                          if (!isEmail && !isPhone) {
-                            return 'Format nomor HP atau email tidak valid';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Request OTP Button
-                      Container(
-                        height: 52,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: AppColors.primaryGradient,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: isLoading
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                )
-                              : const Text(
-                                  'Kirim Kode OTP',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
-              const SizedBox(height: 24),
-
-              // Demo Credentials Card
-              _buildDemoCard(),
-
-              const SizedBox(height: 24),
-              const Text(
-                'Versi 1.1.0',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white24,
-                  fontSize: 12,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -246,9 +279,9 @@ class _LoginPageState extends State<LoginPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.secondary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.25)),
+        color: const Color(0xFF0284C7).withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFBAE6FD), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,12 +289,12 @@ class _LoginPageState extends State<LoginPage> {
           Row(
             children: [
               const Icon(Icons.person_pin_circle_outlined,
-                  color: AppColors.secondary, size: 18),
+                  color: Color(0xFF0284C7), size: 20),
               const SizedBox(width: 8),
               const Text(
                 'Akun Demo Kurir',
                 style: TextStyle(
-                  color: AppColors.secondary,
+                  color: Color(0xFF0F172A),
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                   letterSpacing: 0.5,
@@ -274,21 +307,21 @@ class _LoginPageState extends State<LoginPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.15),
+                    color: const Color(0xFF0284C7).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: AppColors.secondary.withValues(alpha: 0.4)),
+                        color: const Color(0xFF0284C7).withOpacity(0.3)),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.flash_on_rounded,
-                          color: AppColors.secondary, size: 13),
+                          color: Color(0xFF0284C7), size: 13),
                       SizedBox(width: 4),
                       Text(
                         'Isi Otomatis',
                         style: TextStyle(
-                          color: AppColors.secondary,
+                          color: Color(0xFF0284C7),
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -300,18 +333,18 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: Colors.white10),
+          const Divider(height: 1, color: Color(0xFFE2E8F0)),
           const SizedBox(height: 12),
-          _buildCredentialRow(
-            icon: Icons.phone_android_rounded,
-            label: 'No. HP',
-            value: _demoPhone,
-          ),
-          const SizedBox(height: 8),
           _buildCredentialRow(
             icon: Icons.email_outlined,
             label: 'Email',
             value: _demoEmail,
+          ),
+          const SizedBox(height: 8),
+          _buildCredentialRow(
+            icon: Icons.lock_open_outlined,
+            label: 'Pass',
+            value: _demoPassword,
           ),
         ],
       ),
@@ -330,25 +363,25 @@ class _LoginPageState extends State<LoginPage> {
           SnackBar(
             content: Text('$label disalin ke clipboard'),
             duration: const Duration(seconds: 1),
-            backgroundColor: AppColors.secondary,
+            backgroundColor: const Color(0xFF0284C7),
           ),
         );
       },
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textMutedDark, size: 15),
+          Icon(icon, color: const Color(0xFF64748B), size: 15),
           const SizedBox(width: 8),
           Text(
             '$label: ',
             style: const TextStyle(
-              color: AppColors.textMutedDark,
+              color: Color(0xFF64748B),
               fontSize: 12,
             ),
           ),
           Text(
             value,
             style: const TextStyle(
-              color: AppColors.textDark,
+              color: Color(0xFF0F172A),
               fontSize: 12,
               fontWeight: FontWeight.w600,
               fontFamily: 'monospace',
@@ -356,19 +389,8 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SizedBox(width: 4),
           const Icon(Icons.copy_outlined,
-              color: Colors.white12, size: 12),
+              color: Color(0xFFCBD5E1), size: 12),
         ],
-      ),
-    );
-  }
-
-  void _fillDemoCredentials() {
-    _loginController.text = _demoPhone;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Nomor HP demo telah diisi!'),
-        duration: Duration(seconds: 1),
-        backgroundColor: AppColors.success,
       ),
     );
   }
